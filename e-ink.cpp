@@ -140,7 +140,7 @@ public:
         gpio_init(mPins.busy);
         gpio_init(mPins.reset);
 
-        spi_set_format(spiInstance, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST)
+        spi_set_format(spiInstance, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
     }
 
     ~Display(void)
@@ -152,7 +152,7 @@ public:
 
     void command(unsigned char byte)
     {
-        gpio_put(mPins.dc, low); // Set the pin low (command).
+        gpio_put(mPins.dc, false); // Set the pin low (command).
 
         write(&byte, 1);
     }
@@ -184,24 +184,24 @@ public:
             // The X or width is out of range, as such, return bad.
             return -1;
         }
-        if (y >= 1024 || heigh >= 1024 || y >= height)
+        if (y >= 1024 || height >= 1024 || y >= height)
         {
             // Y or height is out of range.
             return -2;
         }
 
         unsigned char windowData[9] = {
-            ((x >> 5) & 0x03),
-            ((x & 0x1f) << 3),
-            ((width >> 5) & 0x03),
-            0x07 | ((width & 0x1f) << 3),
+            (unsigned char)((x >> 5) & 0x03),
+            (unsigned char)((x & 0x1f) << 3),
+            (unsigned char)((width >> 5) & 0x03),
+            (unsigned char)(0x07 | ((width & 0x1f) << 3)),
 
-            ((y >> 8) & 0x03),
-            (y & 0x00ff),
-            ((height >> 8) & 0x03),
-            (height & 0x00ff),
+            (unsigned char)((y >> 8) & 0x03),
+            (unsigned char)(y & 0x00ff),
+            (unsigned char)((height >> 8) & 0x03),
+            (unsigned char)(height & 0x00ff),
 
-            0x00 // 0x01 is the other option, which scans in and outside of the window (and only draws the inside), so we can to only scan the inside, hence 0.
+            (unsigned char)0x00 // 0x01 is the other option, which scans in and outside of the window (and only draws the inside), so we can to only scan the inside, hence 0.
         };
         sendData(windowData, 9);
 
@@ -220,7 +220,7 @@ public:
         gpio_put(mPins.reset, true); // Back to high, it is powered on.
     }
 
-    int init(void)
+    void init(void)
     {
         reset();
 
@@ -340,14 +340,15 @@ int main() {
      * *
      */
     unsigned char image[8] = {
-        ~0xff,
-        ~0xfe,
-        ~0xfc,
-        ~0xf8,
-        ~0xf0,
-        ~0xe0,
-        ~0xc0,
-        ~0x80
-    }
+        (unsigned char)~0xff,
+        (unsigned char)~0xfe,
+        (unsigned char)~0xfc,
+        (unsigned char)~0xf8,
+        (unsigned char)~0xf0,
+        (unsigned char)~0xe0,
+        (unsigned char)~0xc0,
+        (unsigned char)~0x80
+    };
+    eink.init();
     eink.drawPartial(image, 8, 5, 5, 8, 8);
 }
