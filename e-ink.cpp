@@ -1,7 +1,6 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/spi.h"
-#include "hardware/dma.h"
 
 typedef unsigned int size_t;
 
@@ -120,7 +119,6 @@ size_t operator "" _MHz(unsigned long long value)
 
 // Suggested that CPOL = 0 and CPHL = 0
 
-// From spi_dma example //
 // // Just for a note:
 #define POWER     36 // 3.3v
 #define GROUND    3  // GND
@@ -144,9 +142,7 @@ public:
         mWidth(width),
         mHeight(height),
         mSpiInstance(spiInstance),
-        mPins(pinout),
-        mTx(dma_claim_unused_channel(true)),
-        mRx(dma_claim_unused_channel(true))
+        mPins(pinout)
     {
         // Set up SPI 0 with a baud rate of 7MHz
         spi_init(spiInstance, 1000 * 1000);
@@ -174,26 +170,24 @@ public:
 
     ~Display(void)
     {
-        dma_channel_unclaim(mTx);
-        dma_channel_unclaim(mRx);
         spi_deinit(mSpiInstance);
     }
 
-    void command(unsigned char byte)
+    void command(unsigned short byte)
     {
         gpio_put(mPins.dc, false); // Set the pin low (command).
 
-        write(&byte, 1);
+        write(0x6000, &byte, 1);
     }
 
-    void sendData(const void* data, size_t size)
+    void sendData(const unsigned short* data, size_t size)
     {
         gpio_put(mPins.dc, true); // Set pin high (data)
 
-        write(data, size);
+        write(0x0000, data, size);
     }
 
-    void draw(const void* data, size_t size)
+    void draw(const unsigned short* data, size_t size)
     {
         command(EINK_CMD_DISPLAY_START_TX_NEW);
 
@@ -204,7 +198,7 @@ public:
         waitUntilIdle();
     }
 
-    int drawPartial(const void* data, size_t size, size_t x, size_t y, size_t width, size_t height)
+    int drawPartial(const unsigned short* data, size_t size, size_t x, size_t y, size_t width, size_t height)
     {
         command(EINK_CMD_PARTIAL_WINDOW);
 
@@ -221,18 +215,18 @@ public:
             return -2;
         }
 
-        unsigned char windowData[9] = {
-            (unsigned char)((x >> 5) & 0x03),
-            (unsigned char)((x & 0x1f) << 3),
-            (unsigned char)((width >> 5) & 0x03),
-            (unsigned char)(0x07 | ((width & 0x1f) << 3)),
+        unsigned short windowData[9] = {
+            (unsigned short)((x >> 5) & 0x03),
+            (unsigned short)((x & 0x1f) << 3),
+            (unsigned short)((width >> 5) & 0x03),
+            (unsigned short)(0x07 | ((width & 0x1f) << 3)),
 
-            (unsigned char)((y >> 8) & 0x03),
-            (unsigned char)(y & 0x00ff),
-            (unsigned char)((height >> 8) & 0x03),
-            (unsigned char)(height & 0x00ff),
+            (unsigned short)((y >> 8) & 0x03),
+            (unsigned short)(y & 0x00ff),
+            (unsigned short)((height >> 8) & 0x03),
+            (unsigned short)(height & 0x00ff),
 
-            (unsigned char)0x00 // 0x01 is the other option, which scans in and outside of the window (and only draws the inside), so we can to only scan the inside, hence 0.
+            (unsigned short)0x00 // 0x01 is the other option, which scans in and outside of the window (and only draws the inside), so we can to only scan the inside, hence 0.
         };
         sendData(windowData, 9);
 
@@ -312,17 +306,6 @@ public:
         powerOn();
         pllControl();
 
-
-        //command(EINK_CMD_PANEL_BREAK_CHECK);
-        //read(buffer, 1);
-        //if (buffer[0] & 0x01 == 0)
-        //{
-        //    // The panel is broken, turn on LED and hold.
-        //    hang();
-        //}
-
-
-
         // horizontal resolution, 800
         buffer[0] = 0x03;
         buffer[1] = 0x20;
@@ -346,7 +329,6 @@ public:
         sendData(buffer, 2);
         blink(10);
 
-
         buffer[0] = 0x22;
         command(EINK_CMD_TCON_SETTING);
         sendData(buffer, 1);
@@ -365,7 +347,7 @@ public:
     {
         command(EINK_CMD_POWER_OFF);
         waitUntilIdle();
-        unsigned char buffer = 0xa5; // Required value for deep sleep.
+        unsigned short buffer = 0x00a5; // Required value for deep sleep.
         command(EINK_CMD_DEEP_SLEEP);
         sendData(&buffer, 1);
     }
@@ -376,51 +358,29 @@ private:
     spi_inst_t* mSpiInstance;
     DisplayPins mPins;
 
-    size_t mTx;
-    size_t mRx;
+    unsigned short buffer[5];
 
-    unsigned char buffer[5];
-
-    void write(const void* buffer, size_t bytes)
+    void write(unsigned short preamble, const unsigned short* buffer, size_t len)
     {
+        waitUntilIdle();
+
         gpio_put(mPins.spi.cs, false); // Active
 
-        spi_write_blocking(mSpiInstance, (unsigned char*)buffer, bytes);
-        //dma_channel_config channelConfig = dma_channel_get_default_config(mTx);
-        //channel_config_set_transfer_data_size(&channelConfig, DMA_SIZE_8);
-        //channel_config_set_dreq(&channelConfig, spi_get_index(mSpiInstance) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
-        //dma_channel_configure(
-        //    mTx,
-        //    &channelConfig,
-        //    &spi_get_hw(mSpiInstance)->dr, // write address
-        //    buffer, // read address
-        //    bytes, // element count (each element is of size transfer_data_size)
-        //    true // start now
-        //);
-        //dma_channel_wait_for_finish_blocking(mTx);
+        spi_write16_blocking(mSpiInstance, &preamble, 1);
+
+        waitUntilIdle();
+
+        spi_write16_blocking(mSpiInstance, buffer, len);
 
         gpio_put(mPins.spi.cs, true); // Inactive
     }
 
-    void read(void* buffer, size_t bytes)
+    void read(unsigned short* buffer, size_t bytes)
     {
         gpio_put(mPins.dc, true); // Set pin high (data)
         gpio_put(mPins.spi.cs, false); // Active
 
-        spi_read_blocking(mSpiInstance, 0, (unsigned char*)buffer, bytes);
-
-        //dma_channel_config channelConfig = dma_channel_get_default_config(mRx);
-        //channel_config_set_transfer_data_size(&channelConfig, DMA_SIZE_8);
-        //channel_config_set_dreq(&channelConfig, spi_get_index(mSpiInstance) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
-        //dma_channel_configure(
-        //    mRx,
-        //    &channelConfig,
-        //    buffer, // write address
-        //    &spi_get_hw(mSpiInstance)->dr, // read address
-        //    bytes, // element count (each element is of size transfer_data_size)
-        //    true // start now
-        //);
-        //dma_channel_wait_for_finish_blocking(mRx);
+        spi_read16_blocking(mSpiInstance, 0, buffer, bytes);
 
         gpio_put(mPins.spi.cs, true); // Inactive
     }
@@ -455,15 +415,15 @@ int main() {
      * **
      * *
      */
-    unsigned char image[8] = {
-        (unsigned char)~0xff,
-        (unsigned char)~0xfe,
-        (unsigned char)~0xfc,
-        (unsigned char)~0xf8,
-        (unsigned char)~0xf0,
-        (unsigned char)~0xe0,
-        (unsigned char)~0xc0,
-        (unsigned char)~0x80
+    unsigned short image[8] = {
+        (unsigned short)0x0000,
+        (unsigned short)0x0001,
+        (unsigned short)0x0003,
+        (unsigned short)0x0007,
+        (unsigned short)0x000f,
+        (unsigned short)0x001f,
+        (unsigned short)0x003f,
+        (unsigned short)0x007f
     };
     eink.init();
     blink(12);
