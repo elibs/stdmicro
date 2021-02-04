@@ -8,19 +8,41 @@ typedef unsigned int size_t;
 struct SPIPins
 {
 public:
-    int miso;
-    int cs;
-    int sck;
-    int mosi;
+    uint miso;
+    uint cs;
+    uint sck;
+    uint mosi;
 };
 
 struct DisplayPins
 {
     SPIPins spi;
-    int dc;
-    int busy;
-    int reset;
+    uint dc;
+    uint busy;
+    uint reset;
 };
+
+#define LED_PIN 25
+
+void blink(int count)
+{
+    sleep_ms(1000);
+    while (count--) {
+        gpio_put(LED_PIN, true);
+        sleep_ms(250);
+        gpio_put(LED_PIN, false);
+        sleep_ms(250);
+    }
+}
+
+void hang(void)
+{
+    gpio_put(LED_PIN, true);
+    while (1)
+    {
+        sleep_ms(1000);
+    }
+}
 
 size_t operator "" _Hz(unsigned long long value)
 {
@@ -46,10 +68,10 @@ size_t operator "" _MHz(unsigned long long value)
 #define EINK_CMD_BOOSTER_SOFT_START 0x06
 #define EINK_CMD_DEEP_SLEEP         0x07
 
-#define EINK_CMD_DISPLAY_START_TX   0x10
+#define EINK_CMD_DISPLAY_START_TX_OLD 0x10
 #define EINK_CMD_DATA_STOP          0x11
 #define EINK_CMD_DISPLAY_REFRESH    0x12
-#define EINK_CMD_DISPLAY_START_TX_RED 0x13
+#define EINK_CMD_DISPLAY_START_TX_NEW 0x13
 
 #define EINK_CMD_DUAL_SPI           0x15
 
@@ -126,19 +148,26 @@ public:
         mTx(dma_claim_unused_channel(true)),
         mRx(dma_claim_unused_channel(true))
     {
-        // Set up SPI 0 with a baud rate of 1MHz
-        spi_init(spiInstance, 1_MHz);
+        // Set up SPI 0 with a baud rate of 7MHz
+        spi_init(spiInstance, 1000 * 1000);
 
         // Initialize the SPI pins
-        gpio_set_function(mPins.spi.miso, GPIO_FUNC_SPI);
         gpio_init(mPins.spi.cs);
+        gpio_put(mPins.spi.cs, true); // drive cs high
+        gpio_set_dir(mPins.spi.cs, true); // output
+
+        gpio_set_function(mPins.spi.miso, GPIO_FUNC_SPI);
         gpio_set_function(mPins.spi.sck, GPIO_FUNC_SPI);
         gpio_set_function(mPins.spi.mosi, GPIO_FUNC_SPI);
 
         // Initialize the dc, busy, and reset pins
         gpio_init(mPins.dc);
+        gpio_set_dir(mPins.dc, true); // output
         gpio_init(mPins.busy);
+        gpio_put(mPins.busy, true); // high, not busy
+        gpio_set_dir(mPins.busy, false); // input
         gpio_init(mPins.reset);
+        gpio_set_dir(mPins.reset, true); // output
 
         spi_set_format(spiInstance, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
     }
@@ -166,7 +195,7 @@ public:
 
     void draw(const void* data, size_t size)
     {
-        command(EINK_CMD_DISPLAY_START_TX);
+        command(EINK_CMD_DISPLAY_START_TX_NEW);
 
         sendData(data, size);
 
@@ -179,6 +208,8 @@ public:
     {
         command(EINK_CMD_PARTIAL_WINDOW);
 
+        width += x;
+        height += y;
         if (x >= 0x80 || width >= 0x80 || x >= width)
         {
             // The X or width is out of range, as such, return bad.
@@ -216,31 +247,81 @@ public:
     void reset(void)
     {
         gpio_put(mPins.reset, false); // Set low, resetting the display.
-        sleep_ms(4);
+        sleep_ms(200);
         gpio_put(mPins.reset, true); // Back to high, it is powered on.
+        sleep_ms(200);
+    }
+
+    void panelSetting()
+    {
+        buffer[0] = 0x17; // 00 - reserved, 0 - load LUT from OPT, 1 - black and white mode, 0 - scan down (instead of up), 1 - shift right (instead of left), 1 - booster on (default), 1 - don't soft reset.
+        command(EINK_CMD_PANEL_SETTING);
+        sendData(buffer, 1);
+        blink(7);
+    }
+
+    void powerSetting()
+    {
+
+        buffer[0] = 0x07;
+        buffer[1] = 0x17;
+        buffer[2] = 0x3f;
+        buffer[3] = 0x3f;
+        buffer[4] = 0x03;
+        command(EINK_CMD_POWER_SETTING);
+        sendData(buffer, 4);
+        blink(4);
+    }
+
+    void boosterSoftStart()
+    {
+        buffer[0] = 0x17;
+        buffer[1] = 0x17;
+        buffer[2] = 0x27;
+        buffer[3] = 0x17;
+        command(EINK_CMD_BOOSTER_SOFT_START);
+        sendData(buffer, 4);
+        blink(3);
+    }
+
+    void powerOn()
+    {
+        command(EINK_CMD_POWER_ON);
+        blink(5);
+        sleep_ms(100);
+        waitUntilIdle();
+        blink(6);
+    }
+
+    void pllControl()
+    {
+        buffer[0] = 0x06;
+        command(EINK_CMD_PLL_CONTROL);
+        sendData(buffer, 1);
+        blink(8);
     }
 
     void init(void)
     {
         reset();
+        blink(3);
 
-        unsigned char buffer[5] = {
-            0x07,
-            0x17,
-            0x3a,
-            0x3a,
-            0x03
-        };
-        command(EINK_CMD_POWER_SETTING);
-        sendData(buffer, 5);
+        powerSetting();
+        panelSetting();
+        boosterSoftStart();
+        powerOn();
+        pllControl();
 
-        command(EINK_CMD_POWER_ON);
-        sleep_ms(100);
-        waitUntilIdle();
 
-        buffer[0] = 0x17; // 00 - reserved, 0 - load LUT from OPT, 1 - black and white mode, 0 - scan down (instead of up), 1 - shift right (instead of left), 1 - booster on (defualt), 1 - don't soft reset.
-        command(EINK_CMD_PANEL_SETTING);
-        sendData(buffer, 1);
+        //command(EINK_CMD_PANEL_BREAK_CHECK);
+        //read(buffer, 1);
+        //if (buffer[0] & 0x01 == 0)
+        //{
+        //    // The panel is broken, turn on LED and hold.
+        //    hang();
+        //}
+
+
 
         // horizontal resolution, 800
         buffer[0] = 0x03;
@@ -251,28 +332,32 @@ public:
         buffer[3] = 0xe0;
         command(EINK_CMD_SET_RESOLUTION);
         sendData(buffer, 4);
+        blink(8);
 
         // Disable MM input definition, and MISO SPI pin
-        buffer[0] = 0x00;
+        buffer[0] = 0x10;
         command(EINK_CMD_DUAL_SPI);
         sendData(buffer, 1);
+        blink(9);
 
         buffer[0] = 0x10;
         buffer[1] = 0x07;
         command(EINK_CMD_VCOM_SETTING);
         sendData(buffer, 2);
+        blink(10);
 
 
         buffer[0] = 0x22;
         command(EINK_CMD_TCON_SETTING);
         sendData(buffer, 1);
+        blink(11);
     }
 
     void waitUntilIdle(void)
     {
-        while (!gpio_get(mPins.busy)) // if busy is being held low (by the display), then we wait.
+        while (gpio_get(mPins.busy) == 0) // if busy is being held low (by the display), then we wait.
         {
-            sleep_ms(10);
+            sleep_ms(100);
         } 
     }
 
@@ -294,28 +379,58 @@ private:
     size_t mTx;
     size_t mRx;
 
+    unsigned char buffer[5];
+
     void write(const void* buffer, size_t bytes)
     {
         gpio_put(mPins.spi.cs, false); // Active
 
-        dma_channel_config channelConfig = dma_channel_get_default_config(mTx);
-        channel_config_set_transfer_data_size(&channelConfig, DMA_SIZE_8);
-        channel_config_set_dreq(&channelConfig, spi_get_index(mSpiInstance) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
-        dma_channel_configure(
-            mTx,
-            &channelConfig,
-            &spi_get_hw(mSpiInstance)->dr, // write address
-            buffer, // read address
-            bytes, // element count (each element is of size transfer_data_size)
-            true // start now
-        );
+        spi_write_blocking(mSpiInstance, (unsigned char*)buffer, bytes);
+        //dma_channel_config channelConfig = dma_channel_get_default_config(mTx);
+        //channel_config_set_transfer_data_size(&channelConfig, DMA_SIZE_8);
+        //channel_config_set_dreq(&channelConfig, spi_get_index(mSpiInstance) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
+        //dma_channel_configure(
+        //    mTx,
+        //    &channelConfig,
+        //    &spi_get_hw(mSpiInstance)->dr, // write address
+        //    buffer, // read address
+        //    bytes, // element count (each element is of size transfer_data_size)
+        //    true // start now
+        //);
+        //dma_channel_wait_for_finish_blocking(mTx);
+
+        gpio_put(mPins.spi.cs, true); // Inactive
+    }
+
+    void read(void* buffer, size_t bytes)
+    {
+        gpio_put(mPins.dc, true); // Set pin high (data)
+        gpio_put(mPins.spi.cs, false); // Active
+
+        spi_read_blocking(mSpiInstance, 0, (unsigned char*)buffer, bytes);
+
+        //dma_channel_config channelConfig = dma_channel_get_default_config(mRx);
+        //channel_config_set_transfer_data_size(&channelConfig, DMA_SIZE_8);
+        //channel_config_set_dreq(&channelConfig, spi_get_index(mSpiInstance) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
+        //dma_channel_configure(
+        //    mRx,
+        //    &channelConfig,
+        //    buffer, // write address
+        //    &spi_get_hw(mSpiInstance)->dr, // read address
+        //    bytes, // element count (each element is of size transfer_data_size)
+        //    true // start now
+        //);
+        //dma_channel_wait_for_finish_blocking(mRx);
 
         gpio_put(mPins.spi.cs, true); // Inactive
     }
 };
 
 int main() {
+    gpio_init(LED_PIN);
+    gpio_set_dir(LED_PIN, GPIO_OUT);
 
+    blink(1);
     Display eink(800, 480, spi0, {
         .spi = {
             .miso = MISO_PIN,
@@ -327,6 +442,7 @@ int main() {
         .busy = BUSY_PIN,
         .reset = RESET_PIN
     });
+    blink(2);
 
     /**
      * Very basic image, will be 8x8 and should be a triangle like so (stars indicating black):
@@ -350,5 +466,11 @@ int main() {
         (unsigned char)~0x80
     };
     eink.init();
+    blink(12);
     eink.drawPartial(image, 8, 5, 5, 8, 8);
+    blink(13);
+    eink.off();
+
+    // Finally, blink the LED to say we are done.
+    blink(-1);
 }
