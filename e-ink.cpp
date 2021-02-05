@@ -206,12 +206,22 @@ public:
         waitUntilIdle();
     }
 
+    /**
+     * Redraw a part of the screen, not the entire thing
+     *
+     * @param data The image data (with appropriate bit depth)
+     * @param size The number of bytes in the data
+     * @param x The starting horizontal pixel bank. NOTE: This goes in 8-pixel chunks.
+     * @param y The starting vertical pizel bank. NOTE: This goes in 1-pixel chunks.
+     * @param width The width of your image. NOTE: This value must be a multiple of 8, and will be converted internally to an end-bank value (must be at least x).
+     * @param height The height of your image. NOTE: This gets converted to ending y-bank internally.
+     */
     int drawPartial(const unsigned char* data, size_t size, size_t x, size_t y, size_t width, size_t height)
     {
         command(EINK_CMD_PARTIAL_WINDOW);
 
-        width += x;
-        height += y;
+        width = (width / 8) + x - 1;
+        height += y - 1;
 
         unsigned char windowData[9] = {
             (unsigned char)((x >> 5) & 0x03),
