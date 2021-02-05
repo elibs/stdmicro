@@ -251,7 +251,6 @@ public:
         buffer[0] = 0x17; // 00 - reserved, 0 - load LUT from OPT, 1 - black and white mode, 0 - scan down (instead of up), 1 - shift right (instead of left), 1 - booster on (default), 1 - don't soft reset.
         command(EINK_CMD_PANEL_SETTING);
         sendData(buffer, 1);
-        blink(7);
     }
 
     void powerSetting()
@@ -260,12 +259,9 @@ public:
         buffer[1] = 0x17;
         buffer[2] = 0x3f;
         buffer[3] = 0x3f;
-        buffer[4] = 0x03;
-        blink(4, 100); // about to send command, 4 fast (for stage)
+        //buffer[4] = 0x03;
         command(EINK_CMD_POWER_SETTING);
-        blink(4); // command sent
-        sendData(buffer, 5);
-        blink(4); // data sent
+        sendData(buffer, 4);
     }
 
     void boosterSoftStart()
@@ -276,16 +272,13 @@ public:
         buffer[3] = 0x17;
         command(EINK_CMD_BOOSTER_SOFT_START);
         sendData(buffer, 4);
-        blink(3);
     }
 
     void powerOn()
     {
         command(EINK_CMD_POWER_ON);
-        blink(5);
         sleep_ms(100);
         waitUntilIdle();
-        blink(6);
     }
 
     void pllControl()
@@ -293,7 +286,15 @@ public:
         buffer[0] = 0x06;
         command(EINK_CMD_PLL_CONTROL);
         sendData(buffer, 1);
-        blink(8);
+    }
+
+    void lut()
+    {
+        buffer[0] = 0x02;
+        buffer[1] = 0x80;
+        buffer[2] = 0x00;
+        command(EINK_CMD_KW_LUT);
+        sendData(buffer, 3);
     }
 
     void init(void)
@@ -301,10 +302,10 @@ public:
         reset();
         blink(3);
 
-        powerSetting();
-        panelSetting();
         boosterSoftStart();
+        powerSetting();
         powerOn();
+        panelSetting();
         pllControl();
 
         // horizontal resolution, 800
@@ -316,29 +317,31 @@ public:
         buffer[3] = 0xe0;
         command(EINK_CMD_SET_RESOLUTION);
         sendData(buffer, 4);
-        blink(8);
 
         // Disable MM input definition, and MISO SPI pin
-        buffer[0] = 0x10;
+        buffer[0] = 0x00;
         command(EINK_CMD_DUAL_SPI);
         sendData(buffer, 1);
-        blink(9);
-
-        buffer[0] = 0x10;
-        buffer[1] = 0x07;
-        command(EINK_CMD_VCOM_SETTING);
-        sendData(buffer, 2);
-        blink(10);
 
         buffer[0] = 0x22;
         command(EINK_CMD_TCON_SETTING);
         sendData(buffer, 1);
-        blink(11);
+
+        buffer[0] = 0x26;
+        command(EINK_CMD_VCOM_DC_SETTING);
+        sendData(buffer, 1);
+
+        buffer[0] = 0x31;
+        buffer[1] = 0x07;
+        command(EINK_CMD_VCOM_SETTING);
+        sendData(buffer, 2);
+
+        lut();
     }
 
     void waitUntilIdle(void)
     {
-        while (gpio_get(mPins.busy) == 0) // if busy is being held low (by the display), then we wait.
+        while (gpio_is_pulled_down(mPins.busy)) // if busy is being held low (by the display), then we wait.
         {
             sleep_ms(100);
         } 
@@ -348,7 +351,9 @@ public:
     {
         command(EINK_CMD_POWER_OFF);
         waitUntilIdle();
-        unsigned char buffer = 0x00a5; // Required value for deep sleep.
+        sleep_ms(500);
+
+        unsigned char buffer = 0xa5; // Required value for deep sleep.
         command(EINK_CMD_DEEP_SLEEP);
         sendData(&buffer, 1);
     }
@@ -361,29 +366,14 @@ private:
 
     unsigned char buffer[5];
 
-    void _write(unsigned short dat)
-    {
-        // flip byte order
-        //dat = ((dat >> 8) & 0x00ff) | (dat << 8);
-
-        spi_write16_blocking(mSpiInstance, &dat, 1);
-
-    }
-
     void write(unsigned char preamble, const unsigned char* buffer, size_t len)
     {
-        for (size_t i = 0; i < len; ++i)
-        {
-            blink(2, 100);
-            waitUntilIdle();
-            blink(2);
-            gpio_pull_down(mPins.spi.cs); // Active
+        waitUntilIdle();
+        gpio_pull_down(mPins.spi.cs); // Active
 
-            spi_write_blocking(mSpiInstance, &buffer[i], 1);
+        spi_write_blocking(mSpiInstance, buffer, len);
 
-            gpio_pull_up(mPins.spi.cs); // Inactive
-        }
-        blink(5, 100); // 5 fast blinks when we are done sending data.
+        gpio_pull_up(mPins.spi.cs); // Inactive
     }
 
 };
@@ -406,33 +396,52 @@ int main() {
     });
     blink(2);
 
-    /**
-     * Very basic image, will be 8x8 and should be a triangle like so (stars indicating black):
-     * ********
-     * *******
-     * ******
-     * *****
-     * ****
-     * ***
-     * **
-     * *
-     */
-    unsigned char image[8] = {
-        (unsigned char)0x00,
-        (unsigned char)0x01,
-        (unsigned char)0x03,
-        (unsigned char)0x07,
-        (unsigned char)0x0f,
-        (unsigned char)0x1f,
-        (unsigned char)0x3f,
-        (unsigned char)0x7f
-    };
     eink.init();
-    blink(12);
-    eink.drawPartial(image, 8, 5, 5, 8, 8);
-    blink(13);
+
+        eink.command(EINK_CMD_DISPLAY_START_TX_OLD);
+        unsigned char white = 0x00;
+
+    // Flood it to black.
+    unsigned char* buffer = new unsigned char[48000];
+    for (int i = 0; i < 48000; ++i)
+    {
+        buffer[i] = 0xff;
+        eink.sendData(&white, 1);
+    }
+
+    blink(5);
+    eink.draw(buffer, 48000);
+    blink(6);
     eink.off();
 
+    ///**
+    // * Very basic image, will be 8x8 and should be a triangle like so (stars indicating black):
+    // * ********
+    // * *******
+    // * ******
+    // * *****
+    // * ****
+    // * ***
+    // * **
+    // * *
+    // */
+    //unsigned char image[8] = {
+    //    (unsigned char)0x00,
+    //    (unsigned char)0x01,
+    //    (unsigned char)0x03,
+    //    (unsigned char)0x07,
+    //    (unsigned char)0x0f,
+    //    (unsigned char)0x1f,
+    //    (unsigned char)0x3f,
+    //    (unsigned char)0x7f
+    //};
+    //eink.init();
+    //blink(12);
+    //eink.drawPartial(image, 8, 5, 5, 8, 8);
+    //blink(13);
+    //eink.off();
+
     // Finally, blink the LED to say we are done.
-    blink(-1);
+    blink(7);
+    sleep_ms(-1);
 }
