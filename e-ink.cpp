@@ -146,7 +146,7 @@ public:
         mPins(pinout)
     {
         // Set up SPI 0 with a baud rate of 7MHz
-        spi_init(spiInstance, 7_MHz);
+        spi_init(spiInstance, 20_MHz);
 
         // Initialize the SPI pins
 
