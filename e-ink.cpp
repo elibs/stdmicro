@@ -352,7 +352,7 @@ public:
         waitUntilIdle();
         sleep_ms(500);
 
-        unsigned char buffer = 0xa5; // Required value for deep sleep.
+        buffer[0] = 0xa5; // Required value for deep sleep.
         command(EINK_CMD_DEEP_SLEEP);
         sendData(&buffer, 1);
     }
@@ -365,30 +365,13 @@ private:
 
     unsigned char buffer[5];
 
-    unsigned char reverse(unsigned char a)
-    {
-        return ((a & 0x01) << 7)
-            | ((a & 0x02) << 5)
-            | ((a & 0x04) << 3)
-            | ((a & 0x08) << 1)
-            | ((a & 0x10) >> 1)
-            | ((a & 0x20) >> 3)
-            | ((a & 0x40) >> 5)
-            | (((a & 0x80) >> 7) & 0x01);
-    }
-
     void write(const unsigned char* data, size_t len)
     {
-        unsigned char byte;
-        for (size_t i = 0; i < len; ++i)
-        {
-            byte = data[i];
-            gpio_put(mPins.spi.cs, 0); // Active
+        gpio_put(mPins.spi.cs, 0); // Active
 
-            spi_write_blocking(mSpiInstance, &byte, 1);
+        spi_write_blocking(mSpiInstance, data, len);
 
-            gpio_put(mPins.spi.cs, 1); // Inactive
-        }
+        gpio_put(mPins.spi.cs, 1); // Inactive
     }
 
 };
