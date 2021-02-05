@@ -443,11 +443,14 @@ int main() {
     eink.draw(buffer, 48000);
 
     blink(5);
-    //eink.off();
-    //blink(6);
+    eink.off();
+    blink(6);
 
-    //eink.powerOn();
-    //blink(7);
+    eink.reset();
+    blink(7, 100);
+
+    eink.powerOn();
+    blink(7);
 
     /**
      * Very basic image, will be 8x8 and should be a triangle like so (stars indicating black):
