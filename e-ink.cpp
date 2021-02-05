@@ -398,14 +398,11 @@ private:
 
     void write(const unsigned char* data, size_t len)
     {
-        for (size_t i = 0; i < len; ++i)
-        {
-            gpio_put(mPins.spi.cs, 0); // Active
+        gpio_put(mPins.spi.cs, 0); // Active
 
-            spi_write_blocking(mSpiInstance, &data[i], 1);
+        spi_write_blocking(mSpiInstance, data, len);
 
-            gpio_put(mPins.spi.cs, 1); // Inactive
-        }
+        gpio_put(mPins.spi.cs, 1); // Inactive
     }
 
 };
