@@ -120,17 +120,18 @@ size_t operator "" _MHz(unsigned long long value)
 // Suggested that CPOL = 0 and CPHL = 0
 
 // // Just for a note:
-#define POWER     36 // 3.3v
-#define GROUND    3  // GND
+//      Name      GPIO // PIN
+#define POWER          // 36 // 3.3v
+#define GROUND         // 3  // GND
 
-#define MISO_PIN  6  // ???   // Unused? (display won't write us back)
-#define CS_PIN    7  // CS    // chip select (low active)
-#define SCK_PIN   4  // SCK   // communications clock
-#define MOSI_PIN  5  // DIN   // should be the data out (from us) pin
+#define MISO_PIN  4    // 6  // ???   // Unused? (display won't write us back)
+#define CS_PIN    5    // 7  // CS    // chip select (low active)
+#define SCK_PIN   2    // 4  // SCK   // communications clock
+#define MOSI_PIN  3    // 5  // DIN   // should be the data out (from us) pin
 
-#define BUSY_PIN  9  // BUSY  // low for busy
-#define RESET_PIN 10 // RESET // low for reset
-#define DC_PIN    11 // DC    // Data (high), Command (low)
+#define BUSY_PIN  6    // 9  // BUSY  // low for busy
+#define RESET_PIN 7    // 10 // RESET // low for reset
+#define DC_PIN    8    // 11 // DC    // Data (high), Command (low)
 
 // NOTE: We will be using DMA for our SPI controller, as it allows us to have
 //       Direct Memory Access, and is a significantly faster transfer speed
@@ -148,23 +149,24 @@ public:
         spi_init(spiInstance, 7_MHz);
 
         // Initialize the SPI pins
-        gpio_init(mPins.spi.cs);
-        gpio_pull_up(mPins.spi.cs); // drive cs high
-        gpio_set_dir(mPins.spi.cs, true); // output
 
-        gpio_set_function(mPins.spi.miso, GPIO_FUNC_SPI);
+        //gpio_set_function(mPins.spi.miso, GPIO_FUNC_SPI);
         gpio_set_function(mPins.spi.sck, GPIO_FUNC_SPI);
         gpio_set_function(mPins.spi.mosi, GPIO_FUNC_SPI);
 
+        gpio_init(mPins.spi.cs);
+        gpio_set_dir(mPins.spi.cs, GPIO_OUT); // output
+        gpio_put(mPins.spi.cs, 1); // output
+
         // Initialize the dc, busy, and reset pins
         gpio_init(mPins.dc);
-        gpio_set_dir(mPins.dc, true); // output
+        gpio_set_dir(mPins.dc, GPIO_OUT); // output
 
         gpio_init(mPins.busy);
-        gpio_set_dir(mPins.busy, false); // input
+        gpio_set_dir(mPins.busy, GPIO_IN); // input
 
         gpio_init(mPins.reset);
-        gpio_set_dir(mPins.reset, true); // output
+        gpio_set_dir(mPins.reset, GPIO_OUT); // output
 
         spi_set_format(spiInstance, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
     }
@@ -176,16 +178,16 @@ public:
 
     void command(unsigned char byte)
     {
-        gpio_pull_down(mPins.dc); // Set the pin low (command).
+        gpio_put(mPins.dc, 0); // Set the pin low (command).
 
-        write(true, &byte, 1);
+        write(&byte, 1);
     }
 
     void sendData(const unsigned char* data, size_t size)
     {
-        gpio_pull_up(mPins.dc); // Set pin high (data)
+        gpio_put(mPins.dc, 1); // Set pin high (data)
 
-        write(false, data, size);
+        write(data, size);
     }
 
     void sendData(unsigned char data)
@@ -270,98 +272,12 @@ public:
 
     void reset(void)
     {
-        gpio_pull_up(mPins.reset); // Pull to high
+        gpio_put(mPins.reset, 1); // Pull to high
         sleep_ms(200);
-        gpio_pull_down(mPins.reset); // Set low, resetting the display.
+        gpio_put(mPins.reset, 0); // Set low, resetting the display.
         sleep_ms(2);
-        gpio_pull_up(mPins.reset); // Back to high, it is powered on.
+        gpio_put(mPins.reset, 1); // Back to high, it is powered on.
         sleep_ms(200);
-    }
-
-    void panelSetting()
-    {
-        buffer[0] = 0x1f; // 00 - reserved, 0 - load LUT from OPT, 1 - black and white mode, 0 - scan down (instead of up), 1 - shift right (instead of left), 1 - booster on (default), 1 - don't soft reset.
-        command(EINK_CMD_PANEL_SETTING);
-        sendData(buffer, 1);
-    }
-
-    void powerSetting()
-    {
-        buffer[0] = 0x07;
-        buffer[1] = 0x07;
-        buffer[2] = 0x3f;
-        buffer[3] = 0x3f;
-        command(EINK_CMD_POWER_SETTING);
-        sendData(buffer, 4);
-    }
-
-    void boosterSoftStart()
-    {
-        buffer[0] = 0x17;
-        buffer[1] = 0x17;
-        buffer[2] = 0x27;
-        buffer[3] = 0x17;
-        command(EINK_CMD_BOOSTER_SOFT_START);
-        sendData(buffer, 4);
-    }
-
-    void powerOn()
-    {
-        command(EINK_CMD_POWER_ON);
-        sleep_ms(100);
-        waitUntilIdle();
-    }
-
-    void pllControl()
-    {
-        buffer[0] = 0x06;
-        command(EINK_CMD_PLL_CONTROL);
-        sendData(buffer, 1);
-    }
-
-    void lut()
-    {
-        buffer[0] = 0x02;
-        buffer[1] = 0x80;
-        buffer[2] = 0x00;
-        command(EINK_CMD_KW_LUT);
-        sendData(buffer, 3);
-    }
-
-    void setResolution()
-    {
-        // horizontal resolution, 800
-        buffer[0] = 0x03;
-        buffer[1] = 0x20;
-
-        // vertical resolution, 480
-        buffer[2] = 0x01;
-        buffer[3] = 0xe0;
-        command(EINK_CMD_SET_RESOLUTION);
-        sendData(buffer, 4);
-    }
-
-    void dualSpi(void)
-    {
-        // Disable MM input definition, and MISO SPI pin
-        buffer[0] = 0x00;
-        command(EINK_CMD_DUAL_SPI);
-        sendData(buffer, 1);
-    }
-
-    void tconSetting(void)
-    {
-        buffer[0] = 0x22;
-        command(EINK_CMD_TCON_SETTING);
-        sendData(buffer, 1);
-    }
-
-    void vconDataInterval(void)
-    {
-        buffer[0] = 0x10;
-        buffer[1] = 0x07;
-        command(EINK_CMD_VCOM_SETTING);
-        sendData(buffer, 2);
     }
 
     void init(void)
@@ -370,29 +286,36 @@ public:
         reset();
         blink(iters++, 100); // 1
 
-        //boosterSoftStart();
-        //blink(iters++, 100); // 2
-        powerSetting();
-        blink(iters++, 100); // 3
-        powerOn();
-        blink(iters++, 100); // 4
-        panelSetting();
-        blink(iters++, 100); // 5
-        //pllControl();
-        setResolution();
-        blink(iters++, 100); // 6
-        dualSpi();
-        blink(iters++, 100); // 7
-        vconDataInterval();
-        blink(iters++, 100); // 9
-        tconSetting();
-        blink(iters++, 100); // 8
+        command(0x01);
+        sendData(0x07);
+        sendData(0x07);
+        sendData(0x3f);
+        sendData(0x3f);
+        blink(iters++, 100); // 1
 
-        //buffer[0] = 0x26;
-        //command(EINK_CMD_VCOM_DC_SETTING);
-        //sendData(buffer, 1);
 
-        //lut();
+        command(0x04);
+        sleep_ms(100);
+        waitUntilIdle();
+        blink(iters++, 100); // 1
+        
+
+        command(0x00);
+        sendData(0x1f);
+        blink(iters++, 100); // 1
+
+        command(0x15);
+        sendData(0x00);
+        blink(iters++, 100); // 1
+
+        command(0x50);
+        sendData(0x10);
+        sendData(0x07);
+        blink(iters++, 100); // 1
+
+        command(0x60);
+        sendData(0x22);
+        blink(iters++, 100); // 1
     }
 
     void clear()
@@ -417,9 +340,8 @@ public:
 
     void waitUntilIdle(void)
     {
-        while (gpio_is_pulled_down(mPins.busy)) // if busy is being held low (by the display), then we wait.
+        while (gpio_get(mPins.busy) == 0) // if busy is being held low (by the display), then we wait.
         {
-            command(0x71);
             sleep_ms(100);
         } 
     }
@@ -443,13 +365,30 @@ private:
 
     unsigned char buffer[5];
 
-    void write(unsigned char preamble, const unsigned char* buffer, size_t len)
+    unsigned char reverse(unsigned char a)
     {
-            gpio_pull_down(mPins.spi.cs); // Active
+        return ((a & 0x01) << 7)
+            | ((a & 0x02) << 5)
+            | ((a & 0x04) << 3)
+            | ((a & 0x08) << 1)
+            | ((a & 0x10) >> 1)
+            | ((a & 0x20) >> 3)
+            | ((a & 0x40) >> 5)
+            | (((a & 0x80) >> 7) & 0x01);
+    }
 
-            spi_write_blocking(mSpiInstance, buffer, len);
+    void write(const unsigned char* data, size_t len)
+    {
+        unsigned char byte;
+        for (size_t i = 0; i < len; ++i)
+        {
+            byte = data[i];
+            gpio_put(mPins.spi.cs, 0); // Active
 
-            gpio_pull_up(mPins.spi.cs); // Inactive
+            spi_write_blocking(mSpiInstance, &byte, 1);
+
+            gpio_put(mPins.spi.cs, 1); // Inactive
+        }
     }
 
 };
