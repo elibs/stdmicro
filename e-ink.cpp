@@ -429,8 +429,9 @@ int main() {
     blink(3);
 
     // Flood it to black.
-    unsigned char* buffer = new unsigned char[48000];
-    for (int i = 0; i < 48000; ++i)
+    size_t bufSize = (800 * 480) / 8;
+    unsigned char* buffer = new unsigned char[bufSize];
+    for (int i = 0; i < bufSize; ++i)
     {
         // 1 = black, 0 = white
         buffer[i] = 0x01;
@@ -440,7 +441,7 @@ int main() {
     //eink.clear();
 
     blink(4);
-    eink.draw(buffer, 48000);
+    eink.draw(buffer, bufSize);
 
     blink(5);
     eink.off();
