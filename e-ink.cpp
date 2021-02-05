@@ -270,8 +270,10 @@ public:
 
     void reset(void)
     {
-        gpio_pull_down(mPins.reset); // Set low, resetting the display.
+        gpio_pull_up(mPins.reset); // Pull to high
         sleep_ms(200);
+        gpio_pull_down(mPins.reset); // Set low, resetting the display.
+        sleep_ms(2);
         gpio_pull_up(mPins.reset); // Back to high, it is powered on.
         sleep_ms(200);
     }
@@ -286,9 +288,9 @@ public:
     void powerSetting()
     {
         buffer[0] = 0x07;
-        buffer[1] = 0x17;
-        buffer[2] = 0x3a;
-        buffer[3] = 0x3a;
+        buffer[1] = 0x07;
+        buffer[2] = 0x3f;
+        buffer[3] = 0x3f;
         command(EINK_CMD_POWER_SETTING);
         sendData(buffer, 4);
     }
@@ -366,25 +368,25 @@ public:
     {
         int iters = 1;
         reset();
-        blink(iters++, 100);
+        blink(iters++, 100); // 1
 
-        boosterSoftStart();
-        blink(iters++, 100);
+        //boosterSoftStart();
+        //blink(iters++, 100); // 2
         powerSetting();
-        blink(iters++, 100);
+        blink(iters++, 100); // 3
         powerOn();
-        blink(iters++, 100);
+        blink(iters++, 100); // 4
         panelSetting();
-        blink(iters++, 100);
+        blink(iters++, 100); // 5
         //pllControl();
         setResolution();
-        blink(iters++, 100);
+        blink(iters++, 100); // 6
         dualSpi();
-        blink(iters++, 100);
-        tconSetting();
-        blink(iters++, 100);
+        blink(iters++, 100); // 7
         vconDataInterval();
-        blink(iters++, 100);
+        blink(iters++, 100); // 9
+        tconSetting();
+        blink(iters++, 100); // 8
 
         //buffer[0] = 0x26;
         //command(EINK_CMD_VCOM_DC_SETTING);
@@ -417,6 +419,7 @@ public:
     {
         while (gpio_is_pulled_down(mPins.busy)) // if busy is being held low (by the display), then we wait.
         {
+            command(0x71);
             sleep_ms(100);
         } 
     }
@@ -442,14 +445,11 @@ private:
 
     void write(unsigned char preamble, const unsigned char* buffer, size_t len)
     {
-        for (size_t i = 0; i < len; ++i)
-        {
             gpio_pull_down(mPins.spi.cs); // Active
 
-            spi_write_blocking(mSpiInstance, &buffer[i], 1);//, len);
+            spi_write_blocking(mSpiInstance, buffer, len);
 
             gpio_pull_up(mPins.spi.cs); // Inactive
-        }
     }
 
 };
