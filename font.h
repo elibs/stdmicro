@@ -18,7 +18,7 @@ typedef float points;
 
 constexpr points operator "" _pt(unsigned long long value)
 {
-    return 0.353 * value;
+    return 2.0 * value;
 }
 
 class EmBox
@@ -36,24 +36,26 @@ public:
     {
     }
 
-    inline void set(size_t x, size_t y)
+    inline void set(points x, points y)
     {
-        if (x > mDimensions || y > mDimensions)
+        if (x > 1 || y > 1)
         {
+            hang();
             return;
         }
 
-        mCanvas->set(x, y, 0);
+        mCanvas->set(x * mDimensions, y * mDimensions, 0);
     }
 
-    inline void clear(size_t x, size_t y)
+    inline void clear(points x, points y)
     {
-        if (x > mDimensions || y > mDimensions)
+        if (x > 1 || y > 1)
         {
+            hang();
             return;
         }
 
-        mCanvas->set(x, y, 1);
+        mCanvas->set(x * mDimensions, y * mDimensions, 1);
     }
 
 protected:
@@ -160,7 +162,7 @@ public:
                 return;
             }
 
-            box->set(x, y);
+            box->set(x / MAX_EM, y / MAX_EM);
         }
     }
 
