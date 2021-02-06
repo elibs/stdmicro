@@ -255,55 +255,11 @@ public:
         sleep_ms(200);
     }
 
-    void panelSetting()
-    {
-        buffer[0] = 0x17; // 00 - reserved, 0 - load LUT from OPT, 1 - black and white mode, 0 - scan down (instead of up), 1 - shift right (instead of left), 1 - booster on (default), 1 - don't soft reset.
-        command(EINK_CMD_PANEL_SETTING);
-        sendData(buffer, 1);
-    }
-
-    void powerSetting()
-    {
-        buffer[0] = 0x07;
-        buffer[1] = 0x17;
-        buffer[2] = 0x3f;
-        buffer[3] = 0x3f;
-        buffer[4] = 0x03;
-        command(EINK_CMD_POWER_SETTING);
-        sendData(buffer, 5);
-    }
-
-    void boosterSoftStart()
-    {
-        buffer[0] = 0x17;
-        buffer[1] = 0x17;
-        buffer[2] = 0x27;
-        buffer[3] = 0x17;
-        command(EINK_CMD_BOOSTER_SOFT_START);
-        sendData(buffer, 4);
-    }
-
     void powerOn()
     {
         command(EINK_CMD_POWER_ON);
         sleep_ms(100);
         waitUntilIdle();
-    }
-
-    void pllControl()
-    {
-        buffer[0] = 0x06;
-        command(EINK_CMD_PLL_CONTROL);
-        sendData(buffer, 1);
-    }
-
-    void lut()
-    {
-        buffer[0] = 0x02;
-        buffer[1] = 0x80;
-        buffer[2] = 0x00;
-        command(EINK_CMD_KW_LUT);
-        sendData(buffer, 3);
     }
 
     void init(void)
@@ -315,35 +271,11 @@ public:
         powerOn();
         panelSetting();
         pllControl();
-
-        // horizontal resolution, 800
-        buffer[0] = 0x03;
-        buffer[1] = 0x20;
-
-        // vertical resolution, 480
-        buffer[2] = 0x01;
-        buffer[3] = 0xe0;
-        command(EINK_CMD_SET_RESOLUTION);
-        sendData(buffer, 4);
-
-        // Disable MM input definition, and MISO SPI pin
-        buffer[0] = 0x00;
-        command(EINK_CMD_DUAL_SPI);
-        sendData(buffer, 1);
-
-        buffer[0] = 0x22;
-        command(EINK_CMD_TCON_SETTING);
-        sendData(buffer, 1);
-
-        buffer[0] = 0x26;
-        command(EINK_CMD_VCOM_DC_SETTING);
-        sendData(buffer, 1);
-
-        buffer[0] = 0x10;
-        buffer[1] = 0x07;
-        command(EINK_CMD_VCOM_SETTING);
-        sendData(buffer, 2);
-
+        resolution();
+        dualSpi();
+        tconSetting();
+        vcomDcSetting();
+        vcomSetting();
         lut();
     }
 
@@ -402,6 +334,93 @@ private:
         spi_write_blocking(mSpiInstance, data, len);
 
         gpio_put(mPins.spi.cs, 1); // Inactive
+    }
+
+    inline void panelSetting()
+    {
+        buffer[0] = 0x17; // 00 - reserved, 0 - load LUT from OPT, 1 - black and white mode, 0 - scan down (instead of up), 1 - shift right (instead of left), 1 - booster on (default), 1 - don't soft reset.
+        command(EINK_CMD_PANEL_SETTING);
+        sendData(buffer, 1);
+    }
+
+    inline void powerSetting()
+    {
+        buffer[0] = 0x07;
+        buffer[1] = 0x17;
+        buffer[2] = 0x3f;
+        buffer[3] = 0x3f;
+        buffer[4] = 0x03;
+        command(EINK_CMD_POWER_SETTING);
+        sendData(buffer, 5);
+    }
+
+    inline void boosterSoftStart()
+    {
+        buffer[0] = 0x17;
+        buffer[1] = 0x17;
+        buffer[2] = 0x27;
+        buffer[3] = 0x17;
+        command(EINK_CMD_BOOSTER_SOFT_START);
+        sendData(buffer, 4);
+    }
+
+    inline void pllControl()
+    {
+        buffer[0] = 0x06;
+        command(EINK_CMD_PLL_CONTROL);
+        sendData(buffer, 1);
+    }
+
+    inline void lut()
+    {
+        buffer[0] = 0x02;
+        buffer[1] = 0x80;
+        buffer[2] = 0x00;
+        command(EINK_CMD_KW_LUT);
+        sendData(buffer, 3);
+    }
+
+    inline void resolution()
+    {
+        // horizontal resolution, 800
+        buffer[0] = 0x03;
+        buffer[1] = 0x20;
+
+        // vertical resolution, 480
+        buffer[2] = 0x01;
+        buffer[3] = 0xe0;
+        command(EINK_CMD_SET_RESOLUTION);
+        sendData(buffer, 4);
+    }
+
+    inline void dualSpi()
+    {
+        // Disable MM input definition, and MISO SPI pin
+        buffer[0] = 0x00;
+        command(EINK_CMD_DUAL_SPI);
+        sendData(buffer, 1);
+    }
+
+    inline void tconSetting()
+    {
+        buffer[0] = 0x22;
+        command(EINK_CMD_TCON_SETTING);
+        sendData(buffer, 1);
+    }
+
+    inline void vcomDcSetting()
+    {
+        buffer[0] = 0x26;
+        command(EINK_CMD_VCOM_DC_SETTING);
+        sendData(buffer, 1);
+    }
+
+    inline void vcomSetting()
+    {
+        buffer[0] = 0x10;
+        buffer[1] = 0x07;
+        command(EINK_CMD_VCOM_SETTING);
+        sendData(buffer, 2);
     }
 
 };
