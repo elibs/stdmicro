@@ -44,7 +44,7 @@ public:
             return;
         }
 
-        mCanvas->set(x * mDimensions, y * mDimensions, 0);
+        mCanvas->set(x * mDimensions, mDimensions - (y * mDimensions), 0);
     }
 
     inline void clear(points x, points y)
