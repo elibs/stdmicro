@@ -68,16 +68,6 @@ void Display::draw(const unsigned char* data, size_t size)
     waitUntilIdle();
 }
 
-/**
- * Redraw a part of the screen, not the entire thing
- *
- * @param data The image data (with appropriate bit depth)
- * @param size The number of bytes in the data
- * @param x The starting horizontal pixel bank. NOTE: This goes in 8-pixel chunks.
- * @param y The starting vertical pizel bank. NOTE: This goes in 1-pixel chunks.
- * @param width The width of your image. NOTE: This value must be a multiple of 8, and will be converted internally to an end-bank value (must be at least x).
- * @param height The height of your image. NOTE: This gets converted to ending y-bank internally.
- */
 int Display::drawPartial(const unsigned char* data, size_t size, size_t x, size_t y, size_t width, size_t height)
 {
     command(EINK_CMD_PARTIAL_WINDOW);
@@ -118,14 +108,14 @@ void Display::reset(void)
     sleep_ms(200);
 }
 
-void Display::powerOn()
+void Display::powerOn(void)
 {
     command(EINK_CMD_POWER_ON);
     sleep_ms(100);
     waitUntilIdle();
 }
 
-void Display::restart()
+void Display::restart(void)
 {
     reset();
 
@@ -151,7 +141,7 @@ void Display::init(void)
     lut();
 }
 
-void Display::clear()
+void Display::clear(void)
 {
     buffer[0] = 0x00;
     command(0x10);

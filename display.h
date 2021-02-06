@@ -99,13 +99,13 @@ public:
 
     void reset(void);
 
-    void powerOn();
+    void powerOn(void);
 
-    void restart();
+    void restart(void);
 
     void init(void);
 
-    void clear();
+    void clear(void);
 
     void waitUntilIdle(void);
 
@@ -128,7 +128,7 @@ private:
         sendData(buffer, 1);
     }
 
-    inline void powerSetting()
+    inline void powerSetting(void)
     {
         buffer[0] = 0x07;
         buffer[1] = 0x17;
@@ -139,7 +139,7 @@ private:
         sendData(buffer, 5);
     }
 
-    inline void boosterSoftStart()
+    inline void boosterSoftStart(void)
     {
         buffer[0] = 0x17;
         buffer[1] = 0x17;
@@ -149,14 +149,14 @@ private:
         sendData(buffer, 4);
     }
 
-    inline void pllControl()
+    inline void pllControl(void)
     {
         buffer[0] = 0x06;
         command(EINK_CMD_PLL_CONTROL);
         sendData(buffer, 1);
     }
 
-    inline void lut()
+    inline void lut(void)
     {
         buffer[0] = 0x02;
         buffer[1] = 0x80;
@@ -165,7 +165,7 @@ private:
         sendData(buffer, 3);
     }
 
-    inline void resolution()
+    inline void resolution(void)
     {
         unsigned short width = (mWidth / 8) << 3;
         // horizontal resolution, 800
@@ -179,7 +179,7 @@ private:
         sendData(buffer, 4);
     }
 
-    inline void dualSpi()
+    inline void dualSpi(void)
     {
         // Disable MM input definition, and MISO SPI pin
         buffer[0] = 0x00;
@@ -187,29 +187,27 @@ private:
         sendData(buffer, 1);
     }
 
-    inline void tconSetting()
+    inline void tconSetting(void)
     {
         buffer[0] = 0x22;
         command(EINK_CMD_TCON_SETTING);
         sendData(buffer, 1);
     }
 
-    inline void vcomDcSetting()
+    inline void vcomDcSetting(void)
     {
         buffer[0] = 0x26;
         command(EINK_CMD_VCOM_DC_SETTING);
         sendData(buffer, 1);
     }
 
-    inline void vcomDataIntervalSetting()
+    inline void vcomDataIntervalSetting(void)
     {
         buffer[0] = 0x89;
         buffer[1] = 0x07;
         command(EINK_CMD_VCOM_DATA_INTERVAL_SETTING);
         sendData(buffer, 2);
     }
-
 };
-
 
 #endif
