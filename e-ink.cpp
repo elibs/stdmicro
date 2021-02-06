@@ -85,7 +85,7 @@ size_t operator "" _MHz(unsigned long long value)
 #define EINK_CMD_TEMP_SENSOR_READ   0x43
 #define EINK_CMD_PANEL_BREAK_CHECK  0x44
 
-#define EINK_CMD_VCOM_SETTING       0x50
+#define EINK_CMD_VCOM_DATA_INTERVAL_SETTING 0x50
 #define EINK_CMD_LOW_POWER_DETECT   0x51
 #define EINK_CMD_END_VOLT_SETTING   0x52
 
@@ -275,7 +275,7 @@ public:
         dualSpi();
         tconSetting();
         vcomDcSetting();
-        vcomSetting();
+        vcomDataIntervalSetting();
         lut();
     }
 
@@ -416,11 +416,11 @@ private:
         sendData(buffer, 1);
     }
 
-    inline void vcomSetting()
+    inline void vcomDataIntervalSetting()
     {
         buffer[0] = 0x10;
         buffer[1] = 0x07;
-        command(EINK_CMD_VCOM_SETTING);
+        command(EINK_CMD_VCOM_DATA_INTERVAL_SETTING);
         sendData(buffer, 2);
     }
 
