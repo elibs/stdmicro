@@ -382,9 +382,10 @@ private:
 
     inline void resolution()
     {
+        short width = (mWidth / 8) << 3;
         // horizontal resolution, 800
-        buffer[0] = 0x03;
-        buffer[1] = 0x20;
+        buffer[0] = (width >> 8) & 0xff;
+        buffer[1] = width & 0xff;
 
         // vertical resolution, 480
         buffer[2] = 0x01;
