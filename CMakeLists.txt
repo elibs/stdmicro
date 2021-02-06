@@ -6,9 +6,19 @@ project(eink)
 
 pico_sdk_init()
 
-add_executable(eink e-ink.cpp)
+add_executable(eink
+    e-ink.cpp
+    display.cpp
+    frequencies.cpp
+    led.cpp
+)
 
 # Pull in our pico_stdlib which pulls in commonly used features
-target_link_libraries(eink pico_stdlib hardware_spi hardware_gpio)
+target_link_libraries(
+    eink
+    pico_stdlib
+    hardware_spi
+    hardware_gpio
+)
 
 pico_add_extra_outputs(eink)
