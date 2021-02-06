@@ -185,6 +185,9 @@ int main() {
     f.setCanvas(&c);
     f.write("A");
 
+    f.setFontSize(72_pt);
+    f.write("AAA");
+
     eink.draw(c.get(), c.size());
 
     /**

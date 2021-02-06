@@ -44,7 +44,7 @@ public:
             return;
         }
 
-        mCanvas->set(x * mDimensions, mDimensions - (y * mDimensions), 0);
+        mCanvas->set(mX + (x * mDimensions), mY + mDimensions - (y * mDimensions), 0);
     }
 
     inline void clear(points x, points y)
@@ -55,7 +55,7 @@ public:
             return;
         }
 
-        mCanvas->set(x * mDimensions, y * mDimensions, 1);
+        mCanvas->set(mX + (x * mDimensions), mY + mDimensions - (y * mDimensions), 1);
     }
 
 protected:
@@ -82,6 +82,7 @@ public:
         mX += delta;
         if (mX >= mCanvas->width())
         {
+            hang();
             mX = 0;
             progressY(mDimensions);
         }
@@ -222,6 +223,11 @@ public:
         mY = 0;
     }
 
+    inline void setFontSize(points size)
+    {
+        mFontSize = size;
+    }
+
     size_t write(const char* str)
     {
         EmBoxHolder bounds(mFontSize, mCanvas);
@@ -233,7 +239,7 @@ public:
         {
             g = (*mFontFace)[str[i]];
             delta = (*g)(&bounds);
-            bounds.progressX(delta);
+            bounds.progressX(delta * mFontSize);
         }
 
         return i;
