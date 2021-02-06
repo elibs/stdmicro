@@ -220,9 +220,9 @@ public:
         mY = 0;
     }
 
-    size_t write(char* str)
+    size_t write(const char* str)
     {
-        EmBoxHolder* bounds = new EmBoxHolder(mFontSize, mCanvas);
+        EmBoxHolder bounds(mFontSize, mCanvas);
 
         size_t i;
         em delta;
@@ -230,8 +230,8 @@ public:
         for (i = 0; str[i]; ++i)
         {
             g = (*mFontFace)[str[i]];
-            delta = (*g)(bounds);
-            bounds->progressX(delta);
+            delta = (*g)(&bounds);
+            bounds.progressX(delta);
         }
 
         return i;

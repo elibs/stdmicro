@@ -179,6 +179,14 @@ int main() {
     eink.restart();
     blink(7);
 
+
+    DejaVusSans dvs;
+    Font f(&dvs, 16_pt);
+    f.setCanvas(&c);
+    f.write("A");
+
+    eink.draw(c.get(), c.size());
+
     /**
      * Very basic image, will be 8x8 and should be a triangle like so (stars indicating black):
      * ********
