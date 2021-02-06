@@ -9,7 +9,6 @@ pico_sdk_init()
 add_executable(eink
     e-ink.cpp
     display.cpp
-    frequencies.cpp
     led.cpp
 )
 
