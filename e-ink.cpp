@@ -452,8 +452,8 @@ int main() {
     unsigned char* buffer = new unsigned char[bufSize];
     for (int i = 0; i < bufSize; ++i)
     {
-        // 1 = black, 0 = white
-        buffer[i] = 0x01;
+        // 0 = black, 1 = white
+        buffer[i] = 0xfe;
     }
 
     //blink(4);
