@@ -4,7 +4,7 @@
 #include "common.h"
 #include "canvas.h"
 
-#define MAX_EM 1024.0
+#define MAX_EM 2000.0
 
 /**
  * An em is a unit equal to the font's point size.
@@ -188,7 +188,7 @@ public:
     {
     }
 
-    virtual glyph operator[](int c) = 0;
+    virtual glyph operator[](int c) const = 0;
 };
 
 class Font

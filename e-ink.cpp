@@ -23,6 +23,117 @@
 #define RESET_PIN 7    // 10 // RESET // low for reset
 #define DC_PIN    8    // 11 // DC    // Data (high), Command (low)
 
+class Path
+{
+public:
+    ~Path(void)
+    {
+        delete mCurve;
+        delete mNext;
+    }
+
+    static Path start(coord xy)
+    {
+        return Path(xy);
+    }
+
+    Path* line(coord xy)
+    {
+        coord next{mXY.x + xy.x, mXY.y + xy.y};
+        mNext = new Path(next, new BezierCurve(mXY, next));
+        return mNext;
+    }
+
+    Path* horizontal(em delta)
+    {
+        coord next{mXY.x + delta, mXY.y};
+        mNext = new Path(next, new BezierCurve(mXY, next));
+        return mNext;
+    }
+
+    void close(Path* origin)
+    {
+        mNext = new Path(origin->mXY, new BezierCurve(mXY, origin->mXY));
+    }
+
+    void drawTo(EmBox* box)
+    {
+        for (Path* cursor = mNext; cursor; cursor = cursor->mNext)
+        {
+            if (!cursor->mCurve)
+            {
+                return;
+            }
+
+            cursor->mCurve->draw(box);
+        }
+    }
+
+private:
+    coord mXY;
+    BezierCurve* mCurve;
+    Path* mNext;
+
+    Path(coord xy, BezierCurve* curve = NULL):
+        mXY(xy),
+        mCurve(curve),
+        mNext(NULL)
+    {
+    }
+};
+
+class DejaVusSans: public FontFace
+{
+public:
+    virtual ~DejaVusSans(void)
+    {
+    }
+
+    glyph operator[](int c) const override
+    {
+        switch (c)
+        {
+            case 'A':
+                return A;
+            default:
+                return None;
+        }
+    }
+private:
+
+    static em None(EmBox* box)
+    {
+        return 0;
+    }
+
+    static em A(EmBox* box)
+    {
+        // d="M700 1294
+        // l-274 -743
+        // h549
+        // z
+        // M586 1493
+        // h229
+        // l569 -1493
+        // h-210
+        // l-136 383
+        // h-673
+        // l-136 -383
+        // h-213
+        // z" />
+        Path inner = Path::start({700, 1294});
+        inner.line({-274, -743})->horizontal(549)->close(&inner);
+
+        Path outer = Path::start({586, 1493});
+        outer.horizontal(229)->line({569, -1493})->horizontal(-210)->line({-136, 383})->horizontal(-673)->line({-136, -383})->horizontal(-213)->close(&outer);
+
+        inner.drawTo(box);
+        outer.drawTo(box);
+
+        return 1401.0 / MAX_EM;
+    }
+};
+
 int main() {
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
@@ -44,20 +155,22 @@ int main() {
     eink.init();
     blink(3);
 
+    Canvas c(800, 840);
+    blink(4, 100);
     // Flood it to black.
-    size_t bufSize = (800 * 480) / 8;
-    unsigned char* buffer = new unsigned char[bufSize];
-    for (int i = 0; i < bufSize; ++i)
+    for (int x = 0; x < c.width(); x += 8)
     {
-        // 0 = black, 1 = white
-        buffer[i] = 0xfe;
+        for (int y = 0; y < c.height(); ++y)
+        {
+            c.set(x, y, 0);
+        }
     }
 
     //blink(4);
     //eink.clear();
 
     blink(4);
-    eink.draw(buffer, bufSize);
+    eink.draw(c.get(), c.size());
 
     blink(5);
     eink.off();

@@ -24,12 +24,24 @@ public:
 
     inline void set(size_t x, size_t y, unsigned char color)
     {
-        mBuffer[(y * mWidth) + (x / 8)] = color << (7 - (x % 8));
+        if (color)
+        {
+            mBuffer[(y * (mWidth >> 3)) + (x >> 3)] |= 1 << (7 - (x & 0x07));
+        }
+        else
+        {
+            mBuffer[(y * (mWidth >> 3)) + (x >> 3)] &= ~(1 << (7 - (x & 0x07)));
+        }
     }
 
     inline const unsigned char* get(void) const
     {
         return mBuffer;
+    }
+
+    inline size_t size(void) const
+    {
+        return mSize;
     }
 
     inline void clear(void)
