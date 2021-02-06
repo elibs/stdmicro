@@ -1,6 +1,7 @@
 #include "led.h"
 #include "pins.h"
 #include "display.h"
+#include "font.h"
 
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
