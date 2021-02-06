@@ -418,7 +418,7 @@ private:
 
     inline void vcomDataIntervalSetting()
     {
-        buffer[0] = 0x10;
+        buffer[0] = 0x89;
         buffer[1] = 0x07;
         command(EINK_CMD_VCOM_DATA_INTERVAL_SETTING);
         sendData(buffer, 2);
