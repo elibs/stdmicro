@@ -10,8 +10,9 @@
 class EmBoxHolder: public EmBox
 {
 public:
-    EmBoxHolder(points dimensions, Canvas* canvas):
-        EmBox(dimensions, canvas)
+    EmBoxHolder(points lineHeight, points dimensions, Canvas* canvas):
+        EmBox(dimensions, canvas),
+        mLineHeight(lineHeight)
     {
     }
 
@@ -19,7 +20,7 @@ public:
     {
     }
 
-    inline void progressX(size_t delta)
+    void progressX(size_t delta)
     {
         mX += delta;
         if (mX + mDimensions >= mCanvas->width())
@@ -29,14 +30,26 @@ public:
         }
     }
 
-    inline void progressY(size_t delta)
+    void progressY(size_t delta)
     {
-        mY += delta;
+        mY += mLineHeight * delta;
         if (mY + mDimensions >= mCanvas->height())
         {
             mY = 0;
         }
     }
+
+    void setX(size_t value)
+    {
+        mX = value;
+    }
+
+    void setY(size_t value)
+    {
+        mY = value;
+    }
+private:
+    points mLineHeight;
 };
 
 class Font
@@ -75,7 +88,7 @@ public:
 
     size_t write(const char* str)
     {
-        EmBoxHolder bounds(mFontSize, mCanvas);
+        EmBoxHolder bounds(1.15, mFontSize, mCanvas);
 
         size_t i;
         em delta;
@@ -85,6 +98,7 @@ public:
             if (str[i] == '\n')
             {
                 bounds.progressY(mFontSize);
+                bounds.setX(0);
                 continue;
             }
 
