@@ -125,6 +125,19 @@ public:
     {
     }
 
+    coord anchorEndDelta(void) const
+    {
+        switch (mSize)
+        {
+        case 3:
+            return {
+                -mCoords[1].x + mCoords[2].x,
+                -mCoords[1].y + mCoords[2].y
+            };
+        default:
+            return {0, 0};
+        }
+    }
 
     void draw(EmBox* box)
     {

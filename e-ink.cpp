@@ -46,8 +46,28 @@ public:
 
     Path* horizontal(em delta)
     {
-        coord next{mXY.x + delta, mXY.y};
-        mNext = new Path(next, new BezierCurve(mXY, next));
+        return line({delta, 0});
+    }
+
+    Path* vertical(em delta)
+    {
+        return line({0, delta});
+    }
+
+    Path* quadratic(coord anchorDelta, coord shift)
+    {
+        coord next{mXY.x + shift.x, mXY.y + shift.y};
+        coord anchor{mXY.x + anchorDelta.x, mXY.y + anchorDelta.y};
+        mNext = new Path(next, new BezierCurve(mXY, anchor, next));
+        return mNext;
+    }
+
+    Path* t(coord shift)
+    {
+        coord anchorDelta = mCurve->anchorEndDelta();
+        coord next{mXY.x + shift.x, mXY.y + shift.y};
+        coord anchor{mXY.x + anchorDelta.x, mXY.y + anchorDelta.y};
+        mNext = new Path(next, new BezierCurve(mXY, anchor, next));
         return mNext;
     }
 
@@ -95,6 +115,8 @@ public:
         {
             case 'A':
                 return A;
+            case 'B':
+                return B;
             default:
                 return None;
         }
@@ -131,6 +153,56 @@ private:
         outer.drawTo(box);
 
         return 1401.0 / MAX_EM;
+    }
+
+    static em B(EmBox* box)
+    {
+        // M403 713
+        // v-547
+        // h324
+        // q163 0 241.5 67.5
+        // t78.5 206.5
+        // q0 140 -78.5 206.5
+        // t-241.5 66.5
+        // h-324
+        // z
+        //
+        // M403 1327
+        // v-450
+        // h299
+        // q148 0 220.5 55.5
+        // t72.5 169.5
+        // q0 113 -72.5 169
+        // t-220.5 56
+        // h-299
+        // z
+        //
+        // M201 1493
+        // h516
+        // q231 0 356 -96
+        // t125 -273
+        // q0 -137 -64 -218
+        // t-188 -101
+        // q149 -32 231.5 -133.5 
+        // t82.5 -253.5
+        // q0 -200 -136 -309
+        // t-387 -109
+        // h-536v1493
+        // z
+        Path inner1 = Path::start({403, 713});
+        inner1.vertical(-547)->horizontal(324)->quadratic({163, 0}, {241.5, 67.5})->t({78.5, 206.5})->quadratic({0, 140}, {-78.5, 206.5})->t({-241.5, 66.5})->horizontal(-324)->close(&inner1);
+
+        Path inner2 = Path::start({403, 1327});
+        inner2.vertical(-450)->horizontal(299)->quadratic({148, 0}, {220.5, 55.5})->t({72.5, 169.5})->quadratic({0, 113}, {-72.5, 169})->t({-220.5, 56})->horizontal(-299)->close(&inner2);
+
+        Path outer = Path::start({201, 1493});
+        outer.horizontal(516)->quadratic({231, 0}, {356, -96})->t({125, -273})->quadratic({0, -137}, {-64, -218})->t({-188, -101})->quadratic({149, -32}, {231.5, -133.5})->t({82.5, -253.5})->quadratic({0, -200}, {-136, -309})->t({-387, -109})->horizontal(-536)->vertical(1493)->close(&outer);
+
+        inner1.drawTo(box);
+        inner2.drawTo(box);
+        outer.drawTo(box);
+
+        return 1405.0 / MAX_EM;
     }
 };
 
@@ -186,7 +258,7 @@ int main() {
     f.write("A");
 
     f.setFontSize(72_pt);
-    f.write("AAA");
+    f.write("ABA");
 
     eink.draw(c.get(), c.size());
 
