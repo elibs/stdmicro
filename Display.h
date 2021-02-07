@@ -2,7 +2,7 @@
 #define __DISPLAY_H
 
 #include "common.h"
-#include "pins.h"
+#include "Pins.h"
 
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"

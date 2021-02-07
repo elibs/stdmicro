@@ -8,31 +8,11 @@ typedef float mm;
 class Canvas
 {
 public:
-    Canvas(size_t width, size_t height):
-        mWidth(width),
-        mHeight(height),
-        mSize((width / 8) * height),
-        mBuffer(new unsigned char[(width / 8) * height])
-    {
-        clear();
-    }
+    Canvas(size_t width, size_t height);
 
-    ~Canvas(void)
-    {
-        delete mBuffer;
-    }
+    ~Canvas(void);
 
-    inline void set(size_t x, size_t y, unsigned char color)
-    {
-        if (color)
-        {
-            mBuffer[(y * (mWidth >> 3)) + (x >> 3)] |= 1 << (7 - (x & 0x07));
-        }
-        else
-        {
-            mBuffer[(y * (mWidth >> 3)) + (x >> 3)] &= ~(1 << (7 - (x & 0x07)));
-        }
-    }
+    void set(size_t x, size_t y, unsigned char color);
 
     inline const unsigned char* get(void) const
     {

@@ -1,7 +1,9 @@
 #ifndef __PATH_H
 #define __PATH_H
 
-#include "font.h"
+#include "common.h"
+#include "FontCommon.h"
+#include "BezierCurve.h"
 
 class Path
 {

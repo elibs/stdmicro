@@ -8,9 +8,13 @@ pico_sdk_init()
 
 add_executable(eink
     e-ink.cpp
-    display.cpp
-    led.cpp
-    path.cpp
+    Display.cpp
+    Led.cpp
+    Path.cpp
+    DejaVuSans.cpp
+    EmBox.cpp
+    Canvas.cpp
+    BezierCurve.cpp
 )
 
 # Pull in our pico_stdlib which pulls in commonly used features

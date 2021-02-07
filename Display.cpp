@@ -1,5 +1,5 @@
-#include "display.h"
-#include "frequencies.h"
+#include "Display.h"
+#include "Frequencies.h"
 
 Display::Display(size_t width, size_t height, spi_inst_t* spiInstance, DisplayPins pinout):
     mWidth(width),
