@@ -81,7 +81,7 @@ public:
     inline void progressX(size_t delta)
     {
         mX += delta;
-        if (mX >= mCanvas->width())
+        if (mX + mDimensions >= mCanvas->width())
         {
             mX = 0;
             progressY(mDimensions);
@@ -91,7 +91,7 @@ public:
     inline void progressY(size_t delta)
     {
         mY += delta;
-        if (mY >= mCanvas->height())
+        if (mY + mDimensions >= mCanvas->height())
         {
             mY = 0;
         }
@@ -147,13 +147,37 @@ public:
         points t1;
         if (mSize == 2)
         {
-            for (points i = 0; i < MAX_EM; ++i)
+            if (mCoords[0].x == mCoords[1].x)
             {
-                t0 = i / MAX_EM;
-                t1 = 1.0 - t0;
-                x = t1 * mCoords[0].x + t0 * mCoords[1].x;
-                y = t1 * mCoords[0].y + t0 * mCoords[1].y;
-                box->set(x / MAX_EM, y / MAX_EM);
+                x = mCoords[0].x / MAX_EM;
+                y = mCoords[0].y;
+                int dy = y < mCoords[1].y ? 1 : -1;
+                for (; y != mCoords[1].y; y += dy)
+                {
+                    box->set(x , y / MAX_EM);
+                }
+            }
+            else if (mCoords[0].y == mCoords[1].y)
+            {
+                x = mCoords[0].x;
+                y = mCoords[0].y / MAX_EM;
+                int dx = x < mCoords[1].x ? 1 : -1;
+                for (; x != mCoords[1].x; x += dx)
+                {
+                    box->set(x / MAX_EM, y);
+                }
+            }
+            else
+            {
+                points distance = 100;
+                for (points i = 0; i < distance; ++i)
+                {
+                    t0 = i / distance;
+                    t1 = 1.0 - t0;
+                    x = t1 * mCoords[0].x + t0 * mCoords[1].x;
+                    y = t1 * mCoords[0].y + t0 * mCoords[1].y;
+                    box->set(x / MAX_EM, y / MAX_EM);
+                }
             }
 
             return;
@@ -270,10 +294,15 @@ public:
         glyph g;
         for (i = 0; str[i]; ++i)
         {
+            if (str[i] == '\n')
+            {
+                bounds.progressY(mFontSize);
+                continue;
+            }
+
             g = (*mFontFace)[str[i]];
             delta = (*g)(&bounds);
             bounds.progressX((delta / MAX_EM) * mFontSize);
-            blink(i + 1);
         }
 
         return i;

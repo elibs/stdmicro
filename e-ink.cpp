@@ -2758,31 +2758,33 @@ int main() {
     blink(2);
 
     eink.init();
+    eink.off();
+    eink.restart();
     blink(3);
 
     Canvas c(800, 840);
-    blink(4, 100);
-    // Flood it to black.
-    for (int x = 0; x < c.width(); x += 8)
-    {
-        for (int y = 0; y < c.height(); ++y)
-        {
-            c.set(x, y, 0);
-        }
-    }
+    //blink(4, 100);
+    //// Flood it to black.
+    //for (int x = 0; x < c.width(); x += 8)
+    //{
+    //    for (int y = 0; y < c.height(); ++y)
+    //    {
+    //        c.set(x, y, 0);
+    //    }
+    //}
+
+    ////blink(4);
+    ////eink.clear();
 
     //blink(4);
-    //eink.clear();
+    //eink.draw(c.get(), c.size());
 
-    blink(4);
-    eink.draw(c.get(), c.size());
+    //blink(5);
+    //eink.off();
+    //blink(6);
 
-    blink(5);
-    eink.off();
-    blink(6);
-
-    eink.restart();
-    blink(7);
+    //eink.restart();
+    //blink(7);
 
     DejaVuSans dvs;
     Font f(&dvs, 16_pt);
@@ -2790,8 +2792,8 @@ int main() {
     f.write("A");
     blink(7, 100);
 
-    f.setFontSize(72_pt);
-    f.write("The quick brown fox jumps over the lazy dog.");
+    f.setFontSize(20_pt);
+    f.write("\nThe quick brown fox jumps over the lazy dog.");
     blink(7, 100);
 
     eink.draw(c.get(), c.size());
