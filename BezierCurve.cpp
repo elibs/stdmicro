@@ -32,6 +32,15 @@ coord BezierCurve::anchorEndDelta(void) const
     }
 }
 
+float abs(float a)
+{
+    if (a < 0)
+    {
+        return -a;
+    }
+    return a;
+}
+
 void BezierCurve::draw(EmBox* box)
 {
     points x;
@@ -62,13 +71,18 @@ void BezierCurve::draw(EmBox* box)
         }
         else
         {
-            points distance = 100;
-            for (points i = 0; i < distance; ++i)
+            t0 = abs(mCoords[1].x - mCoords[0].x);
+            t1 = abs(mCoords[1].y - mCoords[0].y);
+            if (t0 < t1)
             {
-                t0 = i / distance;
-                t1 = 1.0 - t0;
-                x = t1 * mCoords[0].x + t0 * mCoords[1].x;
-                y = t1 * mCoords[0].y + t0 * mCoords[1].y;
+                t0 = t1;
+            }
+            float t;
+            for (float i = 0; i < t0; ++i)
+            {
+                t = i / t0;
+                x = (1.0 - t) * mCoords[0].x + t * mCoords[1].x;
+                y = (1.0 - t) * mCoords[0].y + t * mCoords[1].y;
                 box->set(x / MAX_EM, y / MAX_EM);
             }
         }
