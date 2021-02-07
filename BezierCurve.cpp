@@ -77,12 +77,12 @@ void BezierCurve::draw(EmBox* box)
             {
                 t0 = t1;
             }
-            float t;
+
             for (float i = 0; i < t0; ++i)
             {
-                t = i / t0;
-                x = (1.0 - t) * mCoords[0].x + t * mCoords[1].x;
-                y = (1.0 - t) * mCoords[0].y + t * mCoords[1].y;
+                t1 = i / t0;
+                x = (1.0 - t1) * mCoords[0].x + t1 * mCoords[1].x;
+                y = (1.0 - t1) * mCoords[0].y + t1 * mCoords[1].y;
                 box->set(x / MAX_EM, y / MAX_EM);
             }
         }
