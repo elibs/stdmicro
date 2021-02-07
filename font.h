@@ -19,7 +19,7 @@ typedef float points;
 
 constexpr points operator "" _pt(unsigned long long value)
 {
-    return 2.0 * value;
+    return 1.73 * value;
 }
 
 class EmBox
