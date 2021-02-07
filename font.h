@@ -82,7 +82,6 @@ public:
         mX += delta;
         if (mX >= mCanvas->width())
         {
-            hang();
             mX = 0;
             progressY(mDimensions);
         }
