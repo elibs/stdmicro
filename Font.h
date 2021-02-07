@@ -26,7 +26,7 @@ public:
         if (mX + mDimensions >= mCanvas->width())
         {
             mX = 0;
-            progressY(mDimensions);
+            nextLine();
         }
     }
 

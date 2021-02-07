@@ -49,54 +49,25 @@ int main() {
     blink(3);
 
     Canvas c(800, 480);
-    //blink(4, 100);
-    //// Flood it to black.
-    //for (int x = 0; x < c.width(); x += 8)
-    //{
-    //    for (int y = 0; y < c.height(); ++y)
-    //    {
-    //        c.set(x, y, 0);
-    //    }
-    //}
 
-    ////blink(4);
-    ////eink.clear();
-
-    //blink(4);
-    //eink.draw(c.get(), c.size());
-
-    //blink(5);
-    //eink.off();
-    //blink(6);
-
-    //eink.restart();
-    //blink(7);
-
-    size_t offset = 0;
-    const char* story = R"__(
-!@#$%~`^&*()_+1234567890-=[]\{}|"';,./<>?
-# Exclusive Fiction: Opening of Stormlight Four
-
-I read about half of this chapter at a convention somewhere, I believe, but the full version has never been seen. It's what will likely be the first chapter of Stormlight Four, which (hopefully) will come out next Christmastime.
-
-I'll warn you though, it's an early draft - and is likely to have not only errors like awkward language, but the occasional continuity problem as well. It also spoils a ton from earlier books. But with those warnings in place, here is chapter one of the next book in the Stormlight Archive.
-
-This is a test.
-Nothing should get here.
-Or here.
-    )__";
+    size_t offset = 1;
+    const char* str = "1234567890 !@#$%^&*() Test\n";
 
     DejaVuSans dvs;
     Font f(&dvs, 16_pt);
     f.setCanvas(&c);
-    blink(7, 100);
 
-    f.setFontSize(16_pt);
-    offset += f.write(story + offset);
-    blink(7, 100);
+    for (int i = 8; i < 30 && offset != 0; ++i)
+    {
+        blink(7, 100);
+        f.setFontSize(1.73 * i);
+        offset = f.write(str);
+        blink(7, 100);
+    }
 
     eink.restart();
     eink.draw(c.get(), c.size());
+    eink.off();
 
     /**
      * Very basic image, will be 8x8 and should be a triangle like so (stars indicating black):
@@ -119,6 +90,7 @@ Or here.
         (unsigned char)0x3f,
         (unsigned char)0x7f
     };
+    eink.restart();
     eink.drawPartial(image, 8, 5, 5, 8, 8);
     blink(8);
 
