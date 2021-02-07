@@ -5,7 +5,7 @@
 #include "canvas.h"
 #include "led.h"
 
-#define MAX_EM 2000.0
+#define MAX_EM 2048.0
 
 /**
  * An em is a unit equal to the font's point size.
@@ -145,24 +145,40 @@ public:
         points y;
         points t0;
         points t1;
-        points t2;
-        points t3;
-        for(points i = 0.0; i < MAX_EM; ++i)
+        if (mSize == 2)
         {
-            t0 = i / MAX_EM;
-            switch (mSize)
+            for (points i = 0; i < MAX_EM; ++i)
             {
-            case 2:
+                t0 = i / MAX_EM;
                 t1 = 1.0 - t0;
                 x = t1 * mCoords[0].x + t0 * mCoords[1].x;
                 y = t1 * mCoords[0].y + t0 * mCoords[1].y;
-                break;
+                box->set(x / MAX_EM, y / MAX_EM);
+            }
+
+            return;
+        }
+
+        points t2;
+        points t3;
+        coord prev = mCoords[0];
+        const float divisor = 20;
+        BezierCurve curve(prev, prev);
+        for(points i = 0.0; i < divisor; ++i)
+        {
+            t0 = i / divisor;
+            switch (mSize)
+            {
             case 3:
                 t1 = square(1.0 - t0);
                 t2 = 2.0 * (1.0 - t0) * t0;
                 t3 = square(t0);
                 x = t1 * mCoords[0].x + t2 * mCoords[1].x + t3 * mCoords[2].x;
                 y = t1 * mCoords[0].y + t2 * mCoords[1].y + t3 * mCoords[2].y;
+                curve.mCoords[0] = prev;
+                curve.mCoords[1] = {x, y};
+                curve.draw(box);
+                prev = {x, y};
                 break;
             case 4:
                 t1 = cube(1.0 - t0);
@@ -171,6 +187,10 @@ public:
                 t0 = cube(t0);
                 x = t1 * mCoords[0].x + t2 * mCoords[1].x + t3 * mCoords[2].x + t0 * mCoords[3].x;
                 y = t1 * mCoords[0].y + t2 * mCoords[1].y + t3 * mCoords[2].y + t0 * mCoords[3].y;
+                curve.mCoords[0] = prev;
+                curve.mCoords[1] = {x, y};
+                curve.draw(box);
+                prev = {x, y};
                 break;
             default:
                 return;
@@ -252,7 +272,8 @@ public:
         {
             g = (*mFontFace)[str[i]];
             delta = (*g)(&bounds);
-            bounds.progressX(delta * mFontSize);
+            bounds.progressX((delta / MAX_EM) * mFontSize);
+            blink(i + 1);
         }
 
         return i;

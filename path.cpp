@@ -12,9 +12,8 @@ Path Path::start(coord xy)
     return Path(xy);
 }
 
-Path* Path::line(coord xy)
+Path* Path::line(coord next)
 {
-    coord next{mXY.x + xy.x, mXY.y + xy.y};
     mNext = new Path(next, new BezierCurve(mXY, next));
     return mNext;
 }
@@ -29,10 +28,8 @@ Path* Path::vertical(em delta)
     return line({0, delta});
 }
 
-Path* Path::quadratic(coord anchorDelta, coord shift)
+Path* Path::quadratic(coord anchor, coord next)
 {
-    coord next{mXY.x + shift.x, mXY.y + shift.y};
-    coord anchor{mXY.x + anchorDelta.x, mXY.y + anchorDelta.y};
     mNext = new Path(next, new BezierCurve(mXY, anchor, next));
     return mNext;
 }

@@ -14,7 +14,7 @@ for path in pathArray:
     gName = path.getAttribute("glyph-name")
     if gName[0] == '.' or path.getAttribute("unicode") is None:
         continue
-    print("static em {}(EmBox* box)\r\n{{".format(path.getAttribute("glyph-name")))
+    print("static em {}(EmBox* box)\n{{".format(path.getAttribute("glyph-name")))
     child=0
     p = parse_path(path.getAttribute("d"))
     for e in p:
@@ -34,4 +34,11 @@ for path in pathArray:
             print(e)
             sys.exit(1)
     print("    return {};".format(path.getAttribute("horiz-adv-x") if path.hasAttribute("horiz-adv-x") else 2000))
-    print("}\r\n")
+    print("}\n")
+
+print("")
+for path in pathArray:
+    gName = path.getAttribute("glyph-name")
+    if gName[0] == '.' or path.getAttribute("unicode") is None:
+        continue
+    print("case '{}': return {};".format(path.getAttribute("unicode"), gName))
