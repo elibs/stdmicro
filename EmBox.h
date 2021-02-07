@@ -11,6 +11,8 @@ public:
 
     virtual ~EmBox(void);
 
+    em maxSegments(void) const;
+
     void set(points x, points y);
 
     void clear(points x, points y);

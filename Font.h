@@ -20,9 +20,9 @@ public:
     {
     }
 
-    void progressX(size_t delta)
+    void progressX(em delta)
     {
-        mX += delta;
+        mX += delta * mDimensions;
         if (mX + mDimensions >= mCanvas->width())
         {
             mX = 0;
@@ -30,13 +30,14 @@ public:
         }
     }
 
-    void progressY(size_t delta)
+    void progressY(em delta)
     {
         mY += mLineHeight * delta;
-        if (mY + mDimensions >= mCanvas->height())
-        {
-            mY = 0;
-        }
+    }
+
+    void nextLine(void)
+    {
+        progressY(mDimensions);
     }
 
     void setX(size_t value)
@@ -48,6 +49,31 @@ public:
     {
         mY = value;
     }
+
+    size_t getX(void) const
+    {
+        return mX;
+    }
+
+    size_t getY(void) const
+    {
+        return mY;
+    }
+
+    void setCanvas(Canvas* canvas)
+    {
+        mCanvas = canvas;
+    }
+
+    void setFontSize(size_t dimensions)
+    {
+        mDimensions = dimensions;
+    }
+
+    bool offCanvas(void) const
+    {
+        return mY + mDimensions > mCanvas->height();
+    }
 private:
     points mLineHeight;
 };
@@ -56,11 +82,8 @@ class Font
 {
 public:
     Font(FontFace* face, points fontSize):
-        mX(0),
-        mY(0),
-        mCanvas(NULL),
         mFontFace(face),
-        mFontSize(fontSize)
+        mBounds(1.15, fontSize, NULL)
     {
     }
 
@@ -71,50 +94,50 @@ public:
 
     inline void setCanvas(Canvas* canvas)
     {
-        mCanvas = canvas;
+        mBounds.setCanvas(canvas);
         reset();
     }
 
     inline void reset(void)
     {
-        mX = 0;
-        mY = 0;
+        mBounds.setX(0);
+        mBounds.setY(0);
     }
 
     inline void setFontSize(points size)
     {
-        mFontSize = size;
+        mBounds.setFontSize(size);
     }
 
     size_t write(const char* str)
     {
-        EmBoxHolder bounds(1.15, mFontSize, mCanvas);
-
         size_t i;
         em delta;
         glyph g;
         for (i = 0; str[i]; ++i)
         {
+            if (mBounds.offCanvas())
+            {
+                break;
+            }
+
             if (str[i] == '\n')
             {
-                bounds.progressY(mFontSize);
-                bounds.setX(0);
+                mBounds.nextLine();
+                mBounds.setX(0);
                 continue;
             }
 
             g = (*mFontFace)[str[i]];
-            delta = (*g)(&bounds);
-            bounds.progressX((delta / MAX_EM) * mFontSize);
+            delta = (*g)(&mBounds);
+            mBounds.progressX(delta / MAX_EM);
         }
 
         return i;
     }
 private:
-    size_t mX;
-    size_t mY;
-    Canvas* mCanvas;
     FontFace* mFontFace;
-    points mFontSize;
+    EmBoxHolder mBounds;
 };
 
 #endif

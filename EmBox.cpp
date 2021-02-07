@@ -13,6 +13,11 @@ EmBox::~EmBox(void)
 {
 }
 
+em EmBox::maxSegments(void) const
+{
+    return mDimensions / 2.;
+}
+
 void EmBox::set(points x, points y)
 {
     if (x > 1 || y > 1)

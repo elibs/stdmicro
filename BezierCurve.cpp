@@ -93,7 +93,7 @@ void BezierCurve::draw(EmBox* box)
     points t2;
     points t3;
     coord prev = mCoords[0];
-    const float divisor = 20;
+    const float divisor = box->maxSegments();
     BezierCurve curve(prev, prev);
     for(points i = 0.0; i < divisor; ++i)
     {

@@ -46,10 +46,9 @@ int main() {
 
     eink.init();
     eink.off();
-    eink.restart();
     blink(3);
 
-    Canvas c(800, 840);
+    Canvas c(800, 480);
     //blink(4, 100);
     //// Flood it to black.
     //for (int x = 0; x < c.width(); x += 8)
@@ -73,16 +72,29 @@ int main() {
     //eink.restart();
     //blink(7);
 
+    size_t offset = 0;
+    const char* story = R"__(
+# Exclusive Fiction: Opening of Stormlight Four
+
+I read about half of this chapter at a convention somewhere, I believe, but the full version has never been seen. It's what will likely be the first chapter of Stormlight Four, which (hopefully) will come out next Christmastime.
+
+I'll warn you though, it's an early draft - and is likely to have not only errors like awkward language, but the occasional continuity problem as well. It also spoils a ton from earlier books. But with those warnings in place, here is chapter one of the next book in the Stormlight Archive.
+
+This is a test.
+Nothing should get here.
+Or here.
+    )__";
+
     DejaVuSans dvs;
     Font f(&dvs, 16_pt);
     f.setCanvas(&c);
-    f.write("A");
     blink(7, 100);
 
-    f.setFontSize(20_pt);
-    f.write("\nThe quick brown fox jumps over the lazy dog.");
+    f.setFontSize(16_pt);
+    offset += f.write(story + offset);
     blink(7, 100);
 
+    eink.restart();
     eink.draw(c.get(), c.size());
 
     /**
