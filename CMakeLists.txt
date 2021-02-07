@@ -10,6 +10,7 @@ add_executable(eink
     e-ink.cpp
     display.cpp
     led.cpp
+    path.cpp
 )
 
 # Pull in our pico_stdlib which pulls in commonly used features

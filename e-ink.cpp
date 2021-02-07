@@ -2,6 +2,7 @@
 #include "pins.h"
 #include "display.h"
 #include "font.h"
+#include "path.h"
 
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
@@ -22,85 +23,6 @@
 #define BUSY_PIN  6    // 9  // BUSY  // low for busy
 #define RESET_PIN 7    // 10 // RESET // low for reset
 #define DC_PIN    8    // 11 // DC    // Data (high), Command (low)
-
-class Path
-{
-public:
-    ~Path(void)
-    {
-        delete mCurve;
-        delete mNext;
-    }
-
-    static Path start(coord xy)
-    {
-        return Path(xy);
-    }
-
-    Path* line(coord xy)
-    {
-        coord next{mXY.x + xy.x, mXY.y + xy.y};
-        mNext = new Path(next, new BezierCurve(mXY, next));
-        return mNext;
-    }
-
-    Path* horizontal(em delta)
-    {
-        return line({delta, 0});
-    }
-
-    Path* vertical(em delta)
-    {
-        return line({0, delta});
-    }
-
-    Path* quadratic(coord anchorDelta, coord shift)
-    {
-        coord next{mXY.x + shift.x, mXY.y + shift.y};
-        coord anchor{mXY.x + anchorDelta.x, mXY.y + anchorDelta.y};
-        mNext = new Path(next, new BezierCurve(mXY, anchor, next));
-        return mNext;
-    }
-
-    Path* t(coord shift)
-    {
-        coord anchorDelta = mCurve->anchorEndDelta();
-        coord next{mXY.x + shift.x, mXY.y + shift.y};
-        coord anchor{mXY.x + anchorDelta.x, mXY.y + anchorDelta.y};
-        mNext = new Path(next, new BezierCurve(mXY, anchor, next));
-        return mNext;
-    }
-
-    void close(Path* origin)
-    {
-        mNext = new Path(origin->mXY, new BezierCurve(mXY, origin->mXY));
-    }
-
-    void drawTo(EmBox* box)
-    {
-        for (Path* cursor = mNext; cursor; cursor = cursor->mNext)
-        {
-            if (!cursor->mCurve)
-            {
-                return;
-            }
-
-            cursor->mCurve->draw(box);
-        }
-    }
-
-private:
-    coord mXY;
-    BezierCurve* mCurve;
-    Path* mNext;
-
-    Path(coord xy, BezierCurve* curve = NULL):
-        mXY(xy),
-        mCurve(curve),
-        mNext(NULL)
-    {
-    }
-};
 
 class DejaVusSans: public FontFace
 {

@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "canvas.h"
+#include "led.h"
 
 #define MAX_EM 2000.0
 
