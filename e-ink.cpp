@@ -74,6 +74,7 @@ int main() {
 
     size_t offset = 0;
     const char* story = R"__(
+!@#$%~`^&*()_+1234567890-=[]\{}|"';,./<>?
 # Exclusive Fiction: Opening of Stormlight Four
 
 I read about half of this chapter at a convention somewhere, I believe, but the full version has never been seen. It's what will likely be the first chapter of Stormlight Four, which (hopefully) will come out next Christmastime.

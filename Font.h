@@ -128,6 +128,12 @@ public:
                 continue;
             }
 
+            // Don't draw a space as the first character of a line.
+            if (str[i] == ' ' && mBounds.getX() == 0)
+            {
+                continue;
+            }
+
             g = (*mFontFace)[str[i]];
             delta = (*g)(&mBounds);
             mBounds.progressX(delta / MAX_EM);
