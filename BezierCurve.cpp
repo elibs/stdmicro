@@ -47,6 +47,7 @@ void BezierCurve::draw(EmBox* box)
     points y;
     points t0;
     points t1;
+    points dt;
     if (mSize == 2)
     {
         if (mCoords[0].x == mCoords[1].x)
@@ -81,8 +82,9 @@ void BezierCurve::draw(EmBox* box)
             for (float i = 0; i < t0; ++i)
             {
                 t1 = i / t0;
-                x = (1.0 - t1) * mCoords[0].x + t1 * mCoords[1].x;
-                y = (1.0 - t1) * mCoords[0].y + t1 * mCoords[1].y;
+                dt = 1.0 - t1;
+                x = dt * mCoords[0].x + t1 * mCoords[1].x;
+                y = dt * mCoords[0].y + t1 * mCoords[1].y;
                 box->set(x / MAX_EM, y / MAX_EM);
             }
         }
@@ -98,11 +100,12 @@ void BezierCurve::draw(EmBox* box)
     for(points i = 0.0; i < divisor; ++i)
     {
         t0 = i / divisor;
+        dt = 1.0 - t0;
         switch (mSize)
         {
         case 3:
-            t1 = square(1.0 - t0);
-            t2 = 2.0 * (1.0 - t0) * t0;
+            t1 = square(dt);
+            t2 = 2.0 * (dt) * t0;
             t3 = square(t0);
             x = t1 * mCoords[0].x + t2 * mCoords[1].x + t3 * mCoords[2].x;
             y = t1 * mCoords[0].y + t2 * mCoords[1].y + t3 * mCoords[2].y;
