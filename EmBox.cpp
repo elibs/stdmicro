@@ -15,7 +15,7 @@ EmBox::~EmBox(void)
 
 em EmBox::maxSegments(void) const
 {
-    return mDimensions / 2.;
+    return mDimensions / 5.;
 }
 
 void EmBox::set(points x, points y)

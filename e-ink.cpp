@@ -57,13 +57,13 @@ int main() {
     Font f(&dvs, 16_pt);
     f.setCanvas(&c);
 
+    blink(7, 100);
     for (int i = 8; i < 30 && offset != 0; ++i)
     {
-        blink(7, 100);
         f.setFontSize(1.73 * i);
         offset = f.write(str);
-        blink(7, 100);
     }
+    blink(7, 100);
 
     eink.restart();
     eink.draw(c.get(), c.size());
