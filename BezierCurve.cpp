@@ -126,7 +126,9 @@ void BezierCurve::draw(EmBox* box)
         default:
             return;
         }
-
-        box->set(x / MAX_EM, y / MAX_EM);
     }
+
+    curve.mCoords[0] = prev;
+    curve.mCoords[1] = mCoords[mSize - 1];
+    curve.draw(box);
 }

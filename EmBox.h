@@ -22,6 +22,7 @@ protected:
     size_t mY;
     Canvas* mCanvas;
     points mDimensions;
+    points mSegments;
 };
 
 #endif
