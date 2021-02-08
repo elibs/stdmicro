@@ -68,7 +68,7 @@ public:
     void setFontSize(size_t dimensions)
     {
         mDimensions = dimensions;
-        mSegments = dimensions / 10.0 + 1.0;
+        mSegments = dimensions / 10.0 + 1.;
     }
 
     bool offCanvas(void) const

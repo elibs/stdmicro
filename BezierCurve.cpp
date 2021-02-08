@@ -106,6 +106,7 @@ void BezierCurve::draw(EmBox* box)
             t3 = square(t0);
             x = t1 * mCoords[0].x + t2 * mCoords[1].x + t3 * mCoords[2].x;
             y = t1 * mCoords[0].y + t2 * mCoords[1].y + t3 * mCoords[2].y;
+
             curve.mCoords[0] = prev;
             curve.mCoords[1] = {x, y};
             curve.draw(box);
@@ -118,6 +119,7 @@ void BezierCurve::draw(EmBox* box)
             t0 = cube(t0);
             x = t1 * mCoords[0].x + t2 * mCoords[1].x + t3 * mCoords[2].x + t0 * mCoords[3].x;
             y = t1 * mCoords[0].y + t2 * mCoords[1].y + t3 * mCoords[2].y + t0 * mCoords[3].y;
+
             curve.mCoords[0] = prev;
             curve.mCoords[1] = {x, y};
             curve.draw(box);

@@ -6,7 +6,7 @@ EmBox::EmBox(points dimensions, Canvas* canvas):
     mY(0),
     mCanvas(canvas),
     mDimensions(dimensions),
-    mSegments(dimensions / 10.0 + 1.0)
+    mSegments(dimensions / 10.0 + 1.)
 {
 }
 
