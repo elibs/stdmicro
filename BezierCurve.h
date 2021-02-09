@@ -17,24 +17,15 @@ public:
 
     BezierCurve(coord a, coord mid1, coord b);
 
-    BezierCurve(coord a, coord mid1, coord mid2, coord b);
-
-    coord anchorEndDelta(void) const;
-
     void draw(EmBox* box);
 
 private:
-    size_t mSize;
-    coord mCoords[4];
+    unsigned char mSize;
+    coord mCoords[3];
 
     inline points square(points v)
     {
         return v * v;
-    }
-
-    inline points cube(points v)
-    {
-        return v * v * v;
     }
 };
 

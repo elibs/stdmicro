@@ -34,15 +34,6 @@ Path* Path::quadratic(coord anchor, coord next)
     return mNext;
 }
 
-Path* Path::t(coord shift)
-{
-    coord anchorDelta = mCurve->anchorEndDelta();
-    coord next{mXY.x + shift.x, mXY.y + shift.y};
-    coord anchor{mXY.x + anchorDelta.x, mXY.y + anchorDelta.y};
-    mNext = new Path(next, new BezierCurve(mXY, anchor, next));
-    return mNext;
-}
-
 void Path::close(Path* origin)
 {
     mNext = new Path(origin->mXY, new BezierCurve(mXY, origin->mXY));

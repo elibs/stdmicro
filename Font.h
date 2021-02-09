@@ -65,10 +65,11 @@ public:
         mCanvas = canvas;
     }
 
-    void setFontSize(size_t dimensions)
+    void setFontSize(points dimensions)
     {
         mDimensions = dimensions;
-        mSegments = dimensions / 10.0 + 1.;
+        mSegments = dimensions / 70;
+        mMult = dimensions / MAX_EM;
     }
 
     bool offCanvas(void) const

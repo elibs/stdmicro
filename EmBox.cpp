@@ -6,7 +6,8 @@ EmBox::EmBox(points dimensions, Canvas* canvas):
     mY(0),
     mCanvas(canvas),
     mDimensions(dimensions),
-    mSegments(dimensions / 10.0 + 1.)
+    mSegments(dimensions / 70),
+    mMult(dimensions / MAX_EM)
 {
 }
 
@@ -14,29 +15,18 @@ EmBox::~EmBox(void)
 {
 }
 
-em EmBox::maxSegments(void) const
+int EmBox::maxSegments(void) const
 {
     return mSegments;
 }
 
 void EmBox::set(points x, points y)
 {
-    if (x < -1 || x > 1 || y < -1 || y > 1)
+    if (x < -MAX_EM || x > MAX_EM || y < -MAX_EM || y > MAX_EM)
     {
         hang();
         return;
     }
 
-    mCanvas->set(mX + (x * mDimensions), mY + mDimensions - (y * mDimensions), 0);
-}
-
-void EmBox::clear(points x, points y)
-{
-    if (x < -1 || x > 1 || y < -1 || y > 1)
-    {
-        hang();
-        return;
-    }
-
-    mCanvas->set(mX + (x * mDimensions), mY + mDimensions - (y * mDimensions), 1);
+    mCanvas->set(mX + (x * mMult), mY + mDimensions - (y * mMult), 0);
 }

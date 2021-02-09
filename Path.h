@@ -20,8 +20,6 @@ public:
 
     Path* quadratic(coord anchorDelta, coord shift);
 
-    Path* t(coord shift);
-
     void close(Path* origin);
 
     void drawTo(EmBox* box);

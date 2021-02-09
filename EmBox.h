@@ -11,18 +11,17 @@ public:
 
     virtual ~EmBox(void);
 
-    em maxSegments(void) const;
+    int maxSegments(void) const;
 
     void set(points x, points y);
-
-    void clear(points x, points y);
 
 protected:
     size_t mX;
     size_t mY;
     Canvas* mCanvas;
     points mDimensions;
-    points mSegments;
+    int mSegments;
+    points mMult;
 };
 
 #endif
