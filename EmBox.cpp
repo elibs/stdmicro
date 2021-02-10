@@ -6,7 +6,7 @@ EmBox::EmBox(points dimensions, Canvas* canvas):
     mY(0),
     mCanvas(canvas),
     mDimensions(dimensions),
-    mSegments(dimensions / 70),
+    mSegments(dimensions / 24),
     mMult(dimensions / MAX_EM)
 {
 }

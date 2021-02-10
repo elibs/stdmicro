@@ -21,47 +21,87 @@ float abs(float a)
     return a;
 }
 
+template<typename T>
+inline void swap(T& a, T& b)
+{
+    T c(a);
+    a = b;
+    b = c;
+}
+
 void drawLine(EmBox* box, coord a, coord b)
 {
     points x;
     points y;
     if (a.x == b.x)
     {
-        x = a.x;
-        y = a.y;
-        int dy = y < b.y ? 1 : -1;
-        for (; y != b.y; y += dy)
+        x = a.y;
+        y = b.y;
+        if (y < x)
         {
-            box->set(x, y);
+            swap(x, y);
+        }
+
+        for (; x < y; ++x)
+        {
+            box->set(a.x, x);
         }
     }
     else if (a.y == b.y)
     {
         x = a.x;
-        y = a.y;
-        int dx = x < b.x ? 1 : -1;
-        for (; x != b.x; x += dx)
+        y = b.x;
+        if (y < x)
         {
-            box->set(x, y);
+            swap(x, y);
+        }
+
+        for (; x < y; ++x)
+        {
+            box->set(x, a.y);
         }
     }
     else
     {
-        points dt;
-        points t0 = abs(b.x - a.x);
-        points t1 = abs(b.y - a.y);
-        if (t0 < t1)
-        {
-            t0 = t1;
-        }
+        const points t0 = (b.y - a.y) / (b.x - a.x);
+        const points t1 = a.y - (t0 * a.x);
 
-        for (float i = 0; i < t0; ++i)
+        if (abs(a.x - b.x) >= abs(a.y - b.y))
         {
-            t1 = i / t0;
-            dt = 1.0 - t1;
-            x = dt * a.x + t1 * b.x;
-            y = dt * a.y + t1 * b.y;
-            box->set(x, y);
+            if (a.x < b.x)
+            {
+                x = a.x;
+                y = b.x;
+            }
+            else
+            {
+                y = a.x;
+                x = b.x;
+            }
+
+            for (; x < y; ++x)
+            {
+                box->set(x, (t0 * x) + t1);
+            }
+        }
+        else
+        {
+            // y = mx + b -> x = (y - b) / m;
+            if (a.y < b.y)
+            {
+                x = a.y;
+                y = b.y;
+            }
+            else
+            {
+                y = a.y;
+                x = b.y;
+            }
+
+            for (; x < y; ++x)
+            {
+                box->set((x - t1) / t0, x);
+            }
         }
     }
 }
@@ -83,7 +123,6 @@ void BezierCurve::draw(EmBox* box)
     points t3;
     coord prev = mCoords[0];
     const float divisor = box->maxSegments();
-    BezierCurve curve(prev, prev);
     for(points i = 0.0; i < divisor; ++i)
     {
         t0 = i / divisor;
@@ -94,13 +133,9 @@ void BezierCurve::draw(EmBox* box)
         x = t1 * mCoords[0].x + t2 * mCoords[1].x + t3 * mCoords[2].x;
         y = t1 * mCoords[0].y + t2 * mCoords[1].y + t3 * mCoords[2].y;
 
-        curve.mCoords[0] = prev;
-        curve.mCoords[1] = {x, y};
-        curve.draw(box);
+        drawLine(box, prev, {x, y});
         prev = {x, y};
     }
 
-    curve.mCoords[0] = prev;
-    curve.mCoords[1] = mCoords[mSize - 1];
-    curve.draw(box);
+    drawLine(box, prev, mCoords[mSize - 1]);
 }
