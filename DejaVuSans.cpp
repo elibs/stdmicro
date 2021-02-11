@@ -106,7 +106,7 @@ glyph DejaVuSans::operator[](int character) const
         case '}': return braceright;
         case '~': return asciitilde;
         default:
-            return None;
+            return none;
     }
 }
 

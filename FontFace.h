@@ -12,8 +12,7 @@ public:
 
     virtual glyph operator[](int c) const = 0;
 
-protected:
-    static em None(EmBox* box)
+    static em none(EmBox* box)
     {
         return 0;
     }
