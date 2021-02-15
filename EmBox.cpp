@@ -22,11 +22,5 @@ int EmBox::maxSegments(void) const
 
 void EmBox::set(points x, points y)
 {
-    if (x < -MAX_EM || x > MAX_EM || y < -MAX_EM || y > MAX_EM)
-    {
-        hang();
-        return;
-    }
-
     mCanvas->set(mX + (x * mMult), mY + mDimensions - (y * mMult), 0);
 }
