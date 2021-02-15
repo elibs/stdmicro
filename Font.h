@@ -20,23 +20,23 @@ public:
     {
     }
 
-    void progressX(em delta)
+    inline void progressX(em delta)
     {
         mX += delta * mDimensions;
         if (mX + mDimensions >= mCanvas->width())
         {
-            mX = 0;
             nextLine();
         }
     }
 
-    void progressY(em delta)
+    inline void progressY(em delta)
     {
         mY += mLineHeight * delta;
     }
 
-    void nextLine(void)
+    inline void nextLine(void)
     {
+        mX = 0;
         progressY(mDimensions);
     }
 
@@ -72,9 +72,9 @@ public:
         mMult = dimensions / MAX_EM;
     }
 
-    bool offCanvas(void) const
+    inline bool offCanvas(void) const
     {
-        return mY + mDimensions > mCanvas->height();
+        return mY + (mDimensions * 1.25) >= mCanvas->height();
     }
 private:
     points mLineHeight;
@@ -126,7 +126,6 @@ public:
             if (str[i] == '\n')
             {
                 mBounds.nextLine();
-                mBounds.setX(0);
                 continue;
             }
 

@@ -68,15 +68,11 @@ void drawLine(EmBox* box, coord a, coord b)
 
         if (abs(a.x - b.x) >= abs(a.y - b.y))
         {
-            if (a.x < b.x)
+            x = a.x;
+            y = b.x;
+            if (y < x)
             {
-                x = a.x;
-                y = b.x;
-            }
-            else
-            {
-                y = a.x;
-                x = b.x;
+                swap(x, y);
             }
 
             for (; x < y; ++x)
@@ -86,17 +82,13 @@ void drawLine(EmBox* box, coord a, coord b)
         }
         else
         {
+            x = a.y;
+            y = b.y;
+            if (y < x)
+            {
+                swap(x, y);
+            }
             // y = mx + b -> x = (y - b) / m;
-            if (a.y < b.y)
-            {
-                x = a.y;
-                y = b.y;
-            }
-            else
-            {
-                y = a.y;
-                x = b.y;
-            }
 
             for (; x < y; ++x)
             {

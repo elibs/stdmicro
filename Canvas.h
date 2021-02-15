@@ -12,7 +12,15 @@ public:
 
     ~Canvas(void);
 
-    void set(size_t x, size_t y, unsigned char color);
+    inline void set(size_t x, size_t y)
+    {
+        mBuffer[(y * (mWidth >> 3)) + (x >> 3)] &= ~(1 << (7 - (x & 0x07)));
+    }
+
+    inline void clear(size_t x, size_t y)
+    {
+        mBuffer[(y * (mWidth >> 3)) + (x >> 3)] |= 1 << (7 - (x & 0x07));
+    }
 
     inline const unsigned char* get(void) const
     {
