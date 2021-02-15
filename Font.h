@@ -22,7 +22,7 @@ public:
 
     inline void progressX(em delta)
     {
-        mX += delta * mDimensions;
+        mX += delta * mMult;
         if (mX + mDimensions >= mCanvas->width())
         {
             nextLine();
@@ -32,6 +32,7 @@ public:
     inline void progressY(em delta)
     {
         mY += mLineHeight * delta;
+        mCY = mY + mDimensions;
     }
 
     inline void nextLine(void)
@@ -48,6 +49,7 @@ public:
     void setY(size_t value)
     {
         mY = value;
+        mCY = mY + mDimensions;
     }
 
     size_t getX(void) const
@@ -114,7 +116,6 @@ public:
     size_t write(const char* str)
     {
         size_t i;
-        em delta;
         glyph g;
         for (i = 0; str[i]; ++i)
         {
@@ -136,8 +137,7 @@ public:
             }
 
             g = (*mFontFace)[str[i]];
-            delta = (*g)(&mBounds);
-            mBounds.progressX(delta / MAX_EM);
+            mBounds.progressX((*g)(&mBounds));
         }
 
         return i;

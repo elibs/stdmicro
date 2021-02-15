@@ -12,7 +12,8 @@ BezierCurve::BezierCurve(coord a, coord mid1, coord b):
 {
 }
 
-float abs(float a)
+template<typename T>
+inline T abs(T a)
 {
     if (a < 0)
     {
@@ -29,10 +30,10 @@ inline void swap(T& a, T& b)
     b = c;
 }
 
-void drawLine(EmBox* box, coord a, coord b)
+inline void drawLine(EmBox* box, coord a, coord b)
 {
-    points x;
-    points y;
+    int x;
+    int y;
     if (a.x == b.x)
     {
         x = a.y;
@@ -64,7 +65,7 @@ void drawLine(EmBox* box, coord a, coord b)
     else
     {
         const points t0 = (b.y - a.y) / (b.x - a.x);
-        const points t1 = a.y - (t0 * a.x);
+        const int t1 = a.y - (t0 * a.x);
 
         if (abs(a.x - b.x) >= abs(a.y - b.y))
         {
@@ -114,7 +115,7 @@ void BezierCurve::draw(EmBox* box)
     points t2;
     points t3;
     coord prev = mCoords[0];
-    const float divisor = box->maxSegments();
+    const int divisor = box->maxSegments();
     for(points i = 0.0; i < divisor; ++i)
     {
         t0 = i / divisor;

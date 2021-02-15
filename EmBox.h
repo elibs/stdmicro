@@ -18,6 +18,7 @@ public:
 protected:
     size_t mX;
     size_t mY;
+    float mCY;
     Canvas* mCanvas;
     points mDimensions;
     int mSegments;
