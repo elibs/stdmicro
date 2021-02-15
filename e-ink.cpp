@@ -75,7 +75,7 @@ It had been over a year since the coming of the Everstorm and the fall of Alethk
     )__";
 
     DejaVuSans dvs;
-    Font f(&dvs, 12_pt);
+    Font f(&dvs, 8_pt);
     f.setCanvas(&c);
 
     blink(7, 100);
@@ -92,5 +92,8 @@ It had been over a year since the coming of the Everstorm and the fall of Alethk
 
     // Finally, blink the LED to say we are done.
     blink(10, 100);
-    sleep_ms(-1);
+    while (1)
+    {
+        sleep_ms(1000);
+    }
 }
