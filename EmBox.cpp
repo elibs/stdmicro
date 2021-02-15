@@ -7,21 +7,10 @@ EmBox::EmBox(points dimensions, Canvas* canvas):
     mCY(dimensions),
     mCanvas(canvas),
     mDimensions(dimensions),
-    mSegments(dimensions / 24),
     mMult(dimensions / MAX_EM)
 {
 }
 
 EmBox::~EmBox(void)
 {
-}
-
-int EmBox::maxSegments(void) const
-{
-    return mSegments;
-}
-
-void EmBox::set(points x, points y)
-{
-    mCanvas->set(mX + (x * mMult), mCY - (y * mMult));
 }

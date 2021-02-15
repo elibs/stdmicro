@@ -11,9 +11,15 @@ public:
 
     virtual ~EmBox(void);
 
-    int maxSegments(void) const;
+    constexpr inline int maxSegments(void) const
+    {
+        return 5;
+    }
 
-    void set(points x, points y);
+    inline void set(points x, points y)
+    {
+        mCanvas->set(mX + (x * mMult), mCY - (y * mMult));
+    }
 
 protected:
     size_t mX;
@@ -21,7 +27,6 @@ protected:
     float mCY;
     Canvas* mCanvas;
     points mDimensions;
-    int mSegments;
     points mMult;
 };
 

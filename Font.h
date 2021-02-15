@@ -70,7 +70,6 @@ public:
     void setFontSize(points dimensions)
     {
         mDimensions = dimensions;
-        mSegments = dimensions / 24;
         mMult = dimensions / MAX_EM;
     }
 
