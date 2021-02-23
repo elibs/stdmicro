@@ -34,6 +34,7 @@ inline void drawLine(EmBox* box, coord a, coord b)
 {
     int x;
     int y;
+    const int additive = 147;
     if (a.x == b.x)
     {
         x = a.y;
@@ -43,7 +44,7 @@ inline void drawLine(EmBox* box, coord a, coord b)
             swap(x, y);
         }
 
-        for (; x < y; ++x)
+        for (; x < y; x += additive)
         {
             box->set(a.x, x);
         }
@@ -57,7 +58,7 @@ inline void drawLine(EmBox* box, coord a, coord b)
             swap(x, y);
         }
 
-        for (; x < y; ++x)
+        for (; x < y; x += additive)
         {
             box->set(x, a.y);
         }
@@ -76,7 +77,7 @@ inline void drawLine(EmBox* box, coord a, coord b)
                 swap(x, y);
             }
 
-            for (; x < y; ++x)
+            for (; x < y; x += additive)
             {
                 box->set(x, (t0 * x) + t1);
             }
@@ -91,7 +92,7 @@ inline void drawLine(EmBox* box, coord a, coord b)
             }
             // y = mx + b -> x = (y - b) / m;
 
-            for (; x < y; ++x)
+            for (; x < y; x += additive)
             {
                 box->set((x - t1) / t0, x);
             }
@@ -127,6 +128,7 @@ void BezierCurve::draw(EmBox* box)
         y = t1 * mCoords[0].y + t2 * mCoords[1].y + t3 * mCoords[2].y;
 
         drawLine(box, prev, {x, y});
+        box->set(x, y);
         prev = {x, y};
     }
 
