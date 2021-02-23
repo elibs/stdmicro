@@ -16,6 +16,21 @@ public:
         return 5;
     }
 
+    inline int xToCanvas(points x)
+    {
+        return mX + (x * mMult);
+    }
+
+    inline int yToCanvas(points y)
+    {
+        return mCY - (y * mMult);
+    }
+
+    inline void setRaw(int x, int y)
+    {
+        mCanvas->set(x, y);
+    }
+
     inline void set(points x, points y)
     {
         mCanvas->set(mX + (x * mMult), mCY - (y * mMult));
