@@ -4,6 +4,7 @@
 #include "Font.h"
 #include "Path.h"
 #include "DejaVuSans.h"
+#include "DejaVuSerif.h"
 
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
@@ -59,7 +60,7 @@ int main() {
 > 
 > -Lecture on Fabrial Mechanics as presented by Navani Kholin to the Coalition of Monarchs, Urithiru.
 
-Lirin was impressed at how calm he felt as he checked the child’s gums for scurvy. Years of training as a surgeon served him well today. Breathing exercises—intended to keep his hands steady—worked just as well for harboring fugitives as they did for surgery.
+Lirin was impressed at how calm he felt as he checked the child’s gums for scurvy. Years of training as a surgeon served him well today. Breathing exercises-intended to keep his hands steady-worked just as well for harboring fugitives as they did for surgery.
 
 "Here," he said to the child's mother, digging from his pocket a small carved carapace chit. "Show this to woman at the dining pavilion. She'll get you some juice for your son. Make certain he drinks it all, each morning."
 
