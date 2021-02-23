@@ -12,6 +12,7 @@ add_executable(eink
     Led.cpp
     Path.cpp
     DejaVuSans.cpp
+    DejaVuSerif.cpp
     EmBox.cpp
     Canvas.cpp
     BezierCurve.cpp
