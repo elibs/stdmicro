@@ -32,6 +32,14 @@ inline void swap(T& a, T& b)
 
 inline void drawLine(EmBox* box, coord a, coord b)
 {
+    if (a.x == b.x && a.y == b.y)
+    {
+        return;
+    }
+
+    box->set(a.x, a.y);
+    box->set(b.x, b.y);
+
     int x;
     int y;
     // NOTE: The value of `additive` is (72 * MAX_EM) / (DISPLAY_PPI * fontSizePt).
@@ -39,35 +47,35 @@ inline void drawLine(EmBox* box, coord a, coord b)
     //       72pt == 1 inch on physical medium.
     //       So, 147 = (72 * 2048) / (125 * 8)
     //               = 147456 / 1000
-    const int additive = 147;
+    const int additive = 147; // 8pt -> 147, 12pt -> 98;
     if (a.x == b.x)
     {
-        x = a.y;
-        y = b.y;
+        x = box->yToCanvas(a.y);
+        y = box->yToCanvas(b.y);
         if (y < x)
         {
             swap(x, y);
         }
 
         int rawX = box->xToCanvas(a.x);
-        for (; x < y; x += additive)
+        for (; x < y; ++x)
         {
-            box->setRaw(rawX, box->yToCanvas(x));
+            box->setRaw(rawX, x);
         }
     }
     else if (a.y == b.y)
     {
-        x = a.x;
-        y = b.x;
+        x = box->xToCanvas(a.x);
+        y = box->xToCanvas(b.x);
         if (y < x)
         {
             swap(x, y);
         }
 
         int rawY = box->yToCanvas(a.y);
-        for (; x < y; x += additive)
+        for (; x < y; ++x)
         {
-            box->setRaw(box->xToCanvas(x), rawY);
+            box->setRaw(x, rawY);
         }
     }
     else
@@ -135,7 +143,6 @@ void BezierCurve::draw(EmBox* box)
         y = t1 * mCoords[0].y + t2 * mCoords[1].y + t3 * mCoords[2].y;
 
         drawLine(box, prev, {x, y});
-        //box->set(x, y);
         prev = {x, y};
     }
 

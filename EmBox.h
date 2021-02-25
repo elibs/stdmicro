@@ -26,6 +26,16 @@ public:
         return mCY - (y * mMult);
     }
 
+    inline int rawYToCanvas(int y)
+    {
+        return mCY - y;
+    }
+
+    inline int rawXToCanvas(int x)
+    {
+        return mX - x;
+    }
+
     inline void setRaw(int x, int y)
     {
         mCanvas->set(x, y);
