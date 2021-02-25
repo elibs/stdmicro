@@ -170,7 +170,7 @@ void Display::waitUntilIdle(void)
     } 
 }
 
-void Display::off(void)
+void Display::powerOff(void)
 {
     command(EINK_CMD_POWER_OFF);
     waitUntilIdle();

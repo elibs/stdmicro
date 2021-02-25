@@ -2,6 +2,7 @@
 #define __DISPLAY_H
 
 #include "common.h"
+#include "DisplayInterface.h"
 #include "Pins.h"
 
 #include "pico/stdlib.h"
@@ -70,20 +71,19 @@
 // NOTE: We will be using DMA for our SPI controller, as it allows us to have
 //       Direct Memory Access, and is a significantly faster transfer speed
 //       than we can, ourselves, do.
-class Display
+class Display: public DisplayInterface
 {
 public:
     Display(size_t width, size_t height, spi_inst_t* spiInstance, DisplayPins pinout);
 
     ~Display(void);
 
-    void command(unsigned char byte);
+    void draw(const unsigned char* data, size_t size) override;
 
-    void sendData(const unsigned char* data, size_t size);
-
-    void sendData(unsigned char data);
-
-    void draw(const unsigned char* data, size_t size);
+    constexpr unsigned int dpi(void) const override
+    {
+        return 125;
+    }
 
     /**
      * Redraw a part of the screen, not the entire thing
@@ -95,21 +95,17 @@ public:
      * @param width The width of your image. NOTE: This value must be a multiple of 8, and will be converted internally to an end-bank value (must be at least x).
      * @param height The height of your image. NOTE: This gets converted to ending y-bank internally.
      */
-    int drawPartial(const unsigned char* data, size_t size, size_t x, size_t y, size_t width, size_t height);
+    int drawPartial(const unsigned char* data, size_t size, size_t x, size_t y, size_t width, size_t height) override;
 
-    void reset(void);
+    void powerOn(void) override;
 
-    void powerOn(void);
+    void restart(void) override;
 
-    void restart(void);
+    void init(void) override;
 
-    void init(void);
+    void clear(void) override;
 
-    void clear(void);
-
-    void waitUntilIdle(void);
-
-    void off(void);
+    void powerOff(void) override;
 
 private:
     size_t mWidth;
@@ -118,6 +114,16 @@ private:
     DisplayPins mPins;
 
     unsigned char buffer[5];
+
+    void command(unsigned char byte);
+
+    void sendData(const unsigned char* data, size_t size);
+
+    void sendData(unsigned char data);
+
+    void reset(void);
+
+    void waitUntilIdle(void);
 
     void write(const unsigned char* data, size_t len);
 

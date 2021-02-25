@@ -46,7 +46,7 @@ int main() {
     blink(2);
 
     eink.init();
-    eink.off();
+    eink.powerOff();
     blink(3);
 
     Canvas c(800, 480);
@@ -89,7 +89,7 @@ It had been over a year since the coming of the Everstorm and the fall of Alethk
 
     eink.restart();
     eink.draw(c.get(), c.size());
-    eink.off();
+    eink.powerOff();
 
     // Finally, blink the LED to say we are done.
     blink(10, 100);
