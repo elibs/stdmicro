@@ -10,6 +10,7 @@ add_executable(eink
     e-ink.cpp
     Display.cpp
     Led.cpp
+    FontSize.cpp
     Path.cpp
     DejaVuSans.cpp
     DejaVuSerif.cpp

@@ -45,11 +45,18 @@ int main() {
     });
     blink(2);
 
+    Canvas c(800, 480);
+    DejaVuSans dvs;
+    Font f(&dvs, 8_pt);
+    f.setCanvas(&c);
+
     eink.init();
+    f.write("This is a test");
+    eink.draw(c.get(), c.size());
+
     eink.powerOff();
     blink(3);
 
-    Canvas c(800, 480);
 
     size_t offset = 1;
     const char* str = R"__(# Chapter One of Stormlight Four
@@ -75,9 +82,6 @@ Those shanties would never last a storm, of course, but could be quickly torn do
 It had been over a year since the coming of the Everstorm and the fall of Alethkar. A year during which the country of Herdaz-Alethkar's small cousin to the north west-had somehow kept fighting. Two months ago, the enemy had finally decided to crush Herdaz for good, and that's when the refugees had started appearing. Like usual, the soldiers fought while the common people-their fields trampled-starved and were forced out of their homes, looking to escape the conflict.
     )__";
 
-    DejaVuSans dvs;
-    Font f(&dvs, 8_pt);
-    f.setCanvas(&c);
 
     blink(7, 100);
     //for (int i = 8; i < 30 && offset != 0; ++i)

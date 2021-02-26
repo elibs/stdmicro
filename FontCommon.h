@@ -1,6 +1,8 @@
 #ifndef __FONT_COMMON_H
 #define __FONT_COMMON_H
 
+#include "FontSize.h"
+
 #define MAX_EM 2048.0
 
 /**
@@ -13,9 +15,9 @@
 typedef float em;
 typedef float points;
 
-constexpr points operator "" _pt(unsigned long long value)
+constexpr FontSize operator "" _pt(unsigned long long value)
 {
-    return 1.73 * value;
+    return {(unsigned int)value};
 }
 
 #endif
