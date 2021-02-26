@@ -8,7 +8,7 @@ pico_sdk_init()
 
 add_executable(eink
     e-ink.cpp
-    Display.cpp
+    GD7965.cpp
     Led.cpp
     FontSize.cpp
     Path.cpp

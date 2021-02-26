@@ -12,13 +12,4 @@ public:
     size_t mosi;
 };
 
-struct DisplayPins
-{
-public:
-    SPIPins spi;
-    size_t dc;
-    size_t busy;
-    size_t reset;
-};
-
 #endif

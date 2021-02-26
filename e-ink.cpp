@@ -1,6 +1,6 @@
 #include "Led.h"
 #include "Pins.h"
-#include "Display.h"
+#include "GD7965.h"
 #include "Font.h"
 #include "Path.h"
 #include "DejaVuSans.h"
@@ -32,7 +32,7 @@ int main() {
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
     blink(1);
-    Display eink(800, 480, spi0, {
+    GD7965 eink(800, 480, spi0, {
         .spi = {
             .miso = MISO_PIN,
             .cs = CS_PIN,

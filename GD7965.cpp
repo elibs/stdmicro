@@ -1,7 +1,7 @@
-#include "Display.h"
+#include "GD7965.h"
 #include "Frequencies.h"
 
-Display::Display(size_t width, size_t height, spi_inst_t* spiInstance, DisplayPins pinout):
+GD7965::GD7965(size_t width, size_t height, spi_inst_t* spiInstance, GD7965Pins pinout):
     mWidth(width),
     mHeight(height),
     mSpiInstance(spiInstance),
@@ -33,31 +33,31 @@ Display::Display(size_t width, size_t height, spi_inst_t* spiInstance, DisplayPi
     spi_set_format(spiInstance, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 }
 
-Display::~Display(void)
+GD7965::~GD7965(void)
 {
     spi_deinit(mSpiInstance);
 }
 
-void Display::command(unsigned char byte)
+void GD7965::command(unsigned char byte)
 {
     gpio_put(mPins.dc, 0); // Set the pin low (command).
 
     write(&byte, 1);
 }
 
-void Display::sendData(const unsigned char* data, size_t size)
+void GD7965::sendData(const unsigned char* data, size_t size)
 {
     gpio_put(mPins.dc, 1); // Set pin high (data)
 
     write(data, size);
 }
 
-void Display::sendData(unsigned char data)
+void GD7965::sendData(unsigned char data)
 {
     sendData(&data, 1);
 }
 
-void Display::draw(const unsigned char* data, size_t size)
+void GD7965::draw(const unsigned char* data, size_t size)
 {
     command(EINK_CMD_DISPLAY_START_TX_NEW);
 
@@ -68,7 +68,7 @@ void Display::draw(const unsigned char* data, size_t size)
     waitUntilIdle();
 }
 
-int Display::drawPartial(const unsigned char* data, size_t size, size_t x, size_t y, size_t width, size_t height)
+int GD7965::drawPartial(const unsigned char* data, size_t size, size_t x, size_t y, size_t width, size_t height)
 {
     command(EINK_CMD_PARTIAL_WINDOW);
 
@@ -98,7 +98,7 @@ int Display::drawPartial(const unsigned char* data, size_t size, size_t x, size_
     return 0;
 }
 
-void Display::reset(void)
+void GD7965::reset(void)
 {
     gpio_put(mPins.reset, 1); // Pull to high
     sleep_ms(200);
@@ -108,14 +108,14 @@ void Display::reset(void)
     sleep_ms(200);
 }
 
-void Display::powerOn(void)
+void GD7965::powerOn(void)
 {
     command(EINK_CMD_POWER_ON);
     sleep_ms(100);
     waitUntilIdle();
 }
 
-void Display::restart(void)
+void GD7965::restart(void)
 {
     reset();
 
@@ -124,7 +124,7 @@ void Display::restart(void)
     vcomDataIntervalSetting();
 }
 
-void Display::init(void)
+void GD7965::init(void)
 {
     reset();
 
@@ -141,7 +141,7 @@ void Display::init(void)
     lut();
 }
 
-void Display::clear(void)
+void GD7965::clear(void)
 {
     buffer[0] = 0x00;
     command(0x10);
@@ -162,7 +162,7 @@ void Display::clear(void)
     waitUntilIdle();
 }
 
-void Display::waitUntilIdle(void)
+void GD7965::waitUntilIdle(void)
 {
     while (gpio_get(mPins.busy) == 0) // if busy is being held low (by the display), then we wait.
     {
@@ -170,7 +170,7 @@ void Display::waitUntilIdle(void)
     } 
 }
 
-void Display::powerOff(void)
+void GD7965::powerOff(void)
 {
     command(EINK_CMD_POWER_OFF);
     waitUntilIdle();
@@ -181,7 +181,7 @@ void Display::powerOff(void)
     sendData(buffer, 1);
 }
 
-void Display::write(const unsigned char* data, size_t len)
+void GD7965::write(const unsigned char* data, size_t len)
 {
     gpio_put(mPins.spi.cs, 0); // Active
 
