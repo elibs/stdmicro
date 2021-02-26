@@ -59,18 +59,18 @@ void GD7965::sendData(unsigned char data)
 
 void GD7965::draw(const unsigned char* data, size_t size)
 {
-    command(EINK_CMD_DISPLAY_START_TX_NEW);
+    command(GD7965_DISPLAY_START_TX_NEW);
 
     sendData(data, size);
 
-    command(EINK_CMD_DISPLAY_REFRESH);
+    command(GD7965_DISPLAY_REFRESH);
     sleep_ms(100);
     waitUntilIdle();
 }
 
 int GD7965::drawPartial(const unsigned char* data, size_t size, size_t x, size_t y, size_t width, size_t height)
 {
-    command(EINK_CMD_PARTIAL_WINDOW);
+    command(GD7965_PARTIAL_WINDOW);
 
     width = (width / 8) + x - 1;
     height += y - 1;
@@ -90,11 +90,11 @@ int GD7965::drawPartial(const unsigned char* data, size_t size, size_t x, size_t
     };
     sendData(windowData, 9);
 
-    command(EINK_CMD_START_PARTIAL);
+    command(GD7965_START_PARTIAL);
 
     draw(data, size);
 
-    command(EINK_CMD_STOP_PARTIAL);
+    command(GD7965_STOP_PARTIAL);
     return 0;
 }
 
@@ -110,7 +110,7 @@ void GD7965::reset(void)
 
 void GD7965::powerOn(void)
 {
-    command(EINK_CMD_POWER_ON);
+    command(GD7965_POWER_ON);
     sleep_ms(100);
     waitUntilIdle();
 }
@@ -172,12 +172,12 @@ void GD7965::waitUntilIdle(void)
 
 void GD7965::powerOff(void)
 {
-    command(EINK_CMD_POWER_OFF);
+    command(GD7965_POWER_OFF);
     waitUntilIdle();
     sleep_ms(500);
 
     buffer[0] = 0xa5; // Required value for deep sleep.
-    command(EINK_CMD_DEEP_SLEEP);
+    command(GD7965_DEEP_SLEEP);
     sendData(buffer, 1);
 }
 

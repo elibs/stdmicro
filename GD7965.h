@@ -18,64 +18,69 @@ public:
     size_t reset;
 };
 
-#define EINK_CMD_PANEL_SETTING      0x00
-#define EINK_CMD_POWER_SETTING      0x01
-#define EINK_CMD_POWER_OFF          0x02
-#define EINK_CMD_POWER_OFF_SEQ      0x03
-#define EINK_CMD_POWER_ON           0x04
-#define EINK_CMD_POWER_ON_MEASURE   0x05
-#define EINK_CMD_BOOSTER_SOFT_START 0x06
-#define EINK_CMD_DEEP_SLEEP         0x07
+enum GD7965Command
+{
+    GD7965_PANEL_SETTING = 0x00,
+    GD7965_POWER_SETTING = 0x01,
+    GD7965_POWER_OFF = 0x02,
+    GD7965_POWER_OFF_SEQ = 0x03,
+    GD7965_POWER_ON = 0x04,
+    GD7965_POWER_ON_MEASURE = 0x05,
+    GD7965_BOOSTER_SOFT_START = 0x06,
+    GD7965_DEEP_SLEEP = 0x07,
 
-#define EINK_CMD_DISPLAY_START_TX_OLD 0x10
-#define EINK_CMD_DATA_STOP          0x11
-#define EINK_CMD_DISPLAY_REFRESH    0x12
-#define EINK_CMD_DISPLAY_START_TX_NEW 0x13
+    GD7965_DISPLAY_START_TX_OLD = 0x10,
+    GD7965_DATA_STOP = 0x11,
+    GD7965_DISPLAY_REFRESH = 0x12,
+    GD7965_DISPLAY_START_TX_NEW = 0x13,
 
-#define EINK_CMD_DUAL_SPI           0x15
+    GD7965_DUAL_SPI = 0x15,
 
-#define EINK_CMD_AUTO_SEQUENCE      0x17
+    GD7965_AUTO_SEQUENCE = 0x17,
 
-#define EINK_CMD_KW_LUT             0x2B
+    GD7965_LUT_OPTION = 0x2A,
+    GD7965_KW_LUT = 0x2B,
 
-#define EINK_CMD_PLL_CONTROL        0x30
+    GD7965_PLL_CONTROL = 0x30,
 
-#define EINK_CMD_TEMP_SENSOR_CALIBRATE 0x40
-#define EINK_CMD_TEMP_SENSOR_SELECT 0x41
-#define EINK_CMD_TEMP_SENSOR_WRITE  0x42
-#define EINK_CMD_TEMP_SENSOR_READ   0x43
-#define EINK_CMD_PANEL_BREAK_CHECK  0x44
+    GD7965_TEMP_SENSOR_CALIBRATION = 0x40,
+    GD7965_TEMP_SENSOR_SELECT = 0x41,
+    GD7965_TEMP_SENSOR_WRITE = 0x42,
+    GD7965_TEMP_SENSOR_READ = 0x43,
+    GD7965_PANEL_BREAK_CHECK = 0x44,
 
-#define EINK_CMD_VCOM_DATA_INTERVAL_SETTING 0x50
-#define EINK_CMD_LOW_POWER_DETECT   0x51
-#define EINK_CMD_END_VOLT_SETTING   0x52
+    GD7965_VCOM_DATA_INTERVAL_SETTING = 0x50,
+    GD7965_LOW_POWER_DETECT = 0x51,
+    GD7965_END_VOLTAGE_SETTING = 0x52,
 
-#define EINK_CMD_TCON_SETTING       0x60
-#define EINK_CMD_SET_RESOLUTION     0x61
+    GD7965_TCON_SETTING = 0x60,
+    GD7965_RESOLUTION_SETTING = 0x61,
 
-#define EINK_CMD_GATE_SOURCE_START_SETTING 0x65
+    GD7965_GATE_SOURCE_START_SETTING = 0x65,
 
-#define EINK_CMD_REVISION           0x70
-#define EINK_CMD_GET_STATUS         0x71
+    GD7965_REVISION = 0x70,
+    GD7965_GET_STATUS = 0x71,
 
-#define EINK_CMD_AUTO_MEASURE_VCOM  0x80
-#define EINK_CMD_READ_VCOM_VALUE    0x81
-#define EINK_CMD_VCOM_DC_SETTING    0x82
+    GD7965_AUTO_MEASUREMENT_VCOM = 0x80,
+    GD7965_READ_VCOM_VALUE = 0x81,
+    GD7965_VCOM_DC_SETTING = 0x82,
 
-#define EINK_CMD_PARTIAL_WINDOW     0x90
-#define EINK_CMD_START_PARTIAL      0x91
-#define EINK_CMD_STOP_PARTIAL       0x92
+    GD7965_PARTIAL_WINDOW = 0x90,
+    GD7965_START_PARTIAL = 0x91,
+    GD7965_STOP_PARTIAL = 0x92,
 
-#define EINK_CMD_PROGRAM_MODE       0xA0
-#define EINK_CMD_ACTIVE_PROGRAMMING 0xA1
-#define EINK_CMD_READ_OTP           0xA2
+    GD7965_PROGRAM_MODE = 0xA0,
+    GD7965_ACTIVE_PROGRAMMING = 0xA1,
+    GD7965_READ_OTP = 0xA2,
 
-#define EINK_CMD_CASCADE_SETTING    0xE0
+    GD7965_CASCADE_SETTING = 0xE0,
 
-#define EINK_CMD_POWER_SAVING       0xE3
-#define EINK_CMD_LVD_VOLT_SELECT    0xE4
-#define EINK_CMD_FORCE_TEMP         0xE5
-#define EINK_CMD_TEMP_BOUNDARY      0xE7
+    GD7965_POWER_SAVING = 0xE3,
+    GD7965_LVD_VOLTAGE_SELECT = 0xE4,
+    GD7965_FORCE_TEMP = 0xE5,
+
+    GD7965_TEMP_BOUNDARY_PHASE_C2 = 0xE7
+};
 
 // NOTE: We will be using DMA for our SPI controller, as it allows us to have
 //       Direct Memory Access, and is a significantly faster transfer speed
@@ -139,7 +144,7 @@ private:
     inline void panelSetting()
     {
         buffer[0] = 0x1f; // 00 - reserved, 0 - load LUT from OPT, 1 - black and white mode, 0 - scan down (instead of up), 1 - shift right (instead of left), 1 - booster on (default), 1 - don't soft reset.
-        command(EINK_CMD_PANEL_SETTING);
+        command(GD7965_PANEL_SETTING);
         sendData(buffer, 1);
     }
 
@@ -150,7 +155,7 @@ private:
         buffer[2] = 0x3f;
         buffer[3] = 0x3f;
         buffer[4] = 0x03;
-        command(EINK_CMD_POWER_SETTING);
+        command(GD7965_POWER_SETTING);
         sendData(buffer, 5);
     }
 
@@ -160,14 +165,14 @@ private:
         buffer[1] = 0x17;
         buffer[2] = 0x27;
         buffer[3] = 0x17;
-        command(EINK_CMD_BOOSTER_SOFT_START);
+        command(GD7965_BOOSTER_SOFT_START);
         sendData(buffer, 4);
     }
 
     inline void pllControl(void)
     {
         buffer[0] = 0x06;
-        command(EINK_CMD_PLL_CONTROL);
+        command(GD7965_PLL_CONTROL);
         sendData(buffer, 1);
     }
 
@@ -176,7 +181,7 @@ private:
         buffer[0] = 0x02;
         buffer[1] = 0x80;
         buffer[2] = 0x00;
-        command(EINK_CMD_KW_LUT);
+        command(GD7965_KW_LUT);
         sendData(buffer, 3);
     }
 
@@ -190,7 +195,7 @@ private:
         // vertical resolution, 480
         buffer[2] = 0x01;
         buffer[3] = 0xe0;
-        command(EINK_CMD_SET_RESOLUTION);
+        command(GD7965_RESOLUTION_SETTING);
         sendData(buffer, 4);
     }
 
@@ -198,21 +203,21 @@ private:
     {
         // Disable MM input definition, and MISO SPI pin
         buffer[0] = 0x00;
-        command(EINK_CMD_DUAL_SPI);
+        command(GD7965_DUAL_SPI);
         sendData(buffer, 1);
     }
 
     inline void tconSetting(void)
     {
         buffer[0] = 0x22;
-        command(EINK_CMD_TCON_SETTING);
+        command(GD7965_TCON_SETTING);
         sendData(buffer, 1);
     }
 
     inline void vcomDcSetting(void)
     {
         buffer[0] = 0x26;
-        command(EINK_CMD_VCOM_DC_SETTING);
+        command(GD7965_VCOM_DC_SETTING);
         sendData(buffer, 1);
     }
 
@@ -220,7 +225,7 @@ private:
     {
         buffer[0] = 0x89;
         buffer[1] = 0x07;
-        command(EINK_CMD_VCOM_DATA_INTERVAL_SETTING);
+        command(GD7965_VCOM_DATA_INTERVAL_SETTING);
         sendData(buffer, 2);
     }
 };
