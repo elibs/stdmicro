@@ -47,7 +47,7 @@ inline void drawLine(EmBox* box, coord a, coord b)
     //       72pt == 1 inch on physical medium.
     //       So, 147 = (72 * 2048) / (125 * 8)
     //               = 147456 / 1000
-    const int additive = 147; // 8pt -> 147, 12pt -> 98;
+    const int additive = 74; // 8pt -> 147, 12pt -> 98;
     if (a.x == b.x)
     {
         x = box->yToCanvas(a.y);

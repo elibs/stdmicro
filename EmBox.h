@@ -33,7 +33,12 @@ public:
 
     inline int rawXToCanvas(int x)
     {
-        return mX - x;
+        return mX + x;
+    }
+
+    inline float mult(void) const
+    {
+        return mMult;
     }
 
     inline void setRaw(int x, int y)

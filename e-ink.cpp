@@ -5,6 +5,11 @@
 #include "Path.h"
 #include "DejaVuSans.h"
 #include "DejaVuSerif.h"
+#include "Frequencies.h"
+
+#include "RP2040_I2C.h"
+
+#include "DS3231.h"
 
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
@@ -26,10 +31,95 @@
 #define RESET_PIN 7    // 10 // RESET // low for reset
 #define DC_PIN    8    // 11 // DC    // Data (high), Command (low)
 
+int m_i2a(char* out, unsigned int i, unsigned int base = 10);
 
-int main() {
+void mysprintf(char *out, const char *fmt, ...)
+{
+    char* args = (char*)(&fmt + 1);
+    while(*fmt)
+    {
+        if(*fmt == '%')
+        {
+            switch(*++fmt)
+            {
+                case('%'):
+                    *out = '%';
+                    break;
+                case('c'):
+                    *out = *(char*)args;
+                    args += sizeof(char*);
+                    break;
+                case('d'):
+                case('i'):
+                    out += m_i2a(out, *(int*)args) - 1;
+                    args += sizeof(int*);
+                    break;
+                case('x'):
+                    out += m_i2a(out, *(int*)args, 16) - 1;
+                    args += sizeof(int*);
+                    break;
+                case('o'):
+                    break;
+                case('p'):
+                    break;
+                case('s'):
+                    break;
+                case('u'):
+                    break;
+                default:
+                    break;
+            }
+        }
+        else
+        {
+            *out = *fmt;
+        }
+        out++;
+        fmt++;
+    }
+    *out = '\0';
+}
+
+int m_i2a(char* out, unsigned int num, unsigned int base)
+{
+    bool neg = false;
+    const char* table = "0123456789abcdef";
+    if((num & (1 << 31)) && base == 10)
+    {
+        *out++ = '-';
+        neg = num *= -1;
+    }
+    int digits;
+    int numc = num;
+    for(digits = numc == 0 ? 1 : 0; numc != 0; digits++, numc /= base);
+    for(int i = 0; i < digits; i++)
+    {
+        unsigned int p = 1;
+        for(int j = 1; j < digits - i; j++, p *= base);
+        *out++ = table[((num / p) % base)];
+    }
+    return digits + (neg ? 1 : 0);
+}
+
+int main()
+{
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
+
+    RP2040_I2C i2c(i2c1, RP2040_I2C_Pins{.sck = 10, .sda = 11}, 100_KHz);
+    DS3231 rtc(&i2c);
+
+    //rtc.write({
+    //    .second = 5,
+    //    .minute = 18,
+    //    .hour = 17,
+    //    .dayOfMonth = 26,
+    //    .month = 2,
+    //    .year = 2021,
+    //    .dayOfWeek = 5,
+    //    .dayOfYear = 57,
+    //    .isDaylightSavingsTime = 0
+    //});
 
     blink(1);
     GD7965 eink(800, 480, spi0, {
@@ -47,17 +137,29 @@ int main() {
 
     Canvas c(800, 480);
     DejaVuSans dvs;
-    Font f(&dvs, 8_pt);
+    Font f(&dvs, 16_pt);
     f.setCanvas(&c);
 
     eink.init();
-    f.write("This is a test");
+    f.write("Test   ");
     eink.draw(c.get(), c.size());
 
     eink.powerOff();
     blink(3);
 
+    char timestampbuf[50];
 
+    tm t;
+    rtc.read(t);
+    mysprintf(timestampbuf, "Date: %d-%d-%d@%d:%d:%d %s", t.year, t.month, t.dayOfMonth, t.hour > 12 ? t.hour - 12 : t.hour, t.minute, t.second, t.hour > 12 ? "PM" : "AM");
+
+    f.write(timestampbuf);
+    eink.restart();
+    eink.draw(c.get(), c.size());
+    eink.powerOff();
+
+
+    /*
     size_t offset = 1;
     const char* str = R"__(# Chapter One of Stormlight Four
 
@@ -94,6 +196,7 @@ It had been over a year since the coming of the Everstorm and the fall of Alethk
     eink.restart();
     eink.draw(c.get(), c.size());
     eink.powerOff();
+    */
 
     // Finally, blink the LED to say we are done.
     blink(10, 100);
