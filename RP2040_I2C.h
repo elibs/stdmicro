@@ -20,8 +20,8 @@ public:
     int read(unsigned char address, void* destination, unsigned int bytes);
     int write(unsigned char address, const void* source, unsigned int bytes);
 
-    unsigned int baudrate(void) const override;
-    void baudrate(unsigned int baudRate) override;
+    size_t baudrate(void) const override;
+    size_t baudrate(size_t baudRate) override;
 private:
     i2c_inst_t* mI2c;
     RP2040_I2C_Pins mPins;

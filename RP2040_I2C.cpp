@@ -26,12 +26,13 @@ int RP2040_I2C::write(unsigned char address, const void* source, unsigned int by
     return i2c_write_blocking(mI2c, address, (const unsigned char*)source, bytes, false);
 }
 
-unsigned int RP2040_I2C::baudrate(void) const
+size_t RP2040_I2C::baudrate(void) const
 {
     return mBaudRate;
 }
 
-void RP2040_I2C::baudrate(unsigned int baudRate)
+size_t RP2040_I2C::baudrate(size_t baudRate)
 {
     mBaudRate = i2c_set_baudrate(mI2c, baudRate);
+    return mBaudRate;
 }

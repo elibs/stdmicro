@@ -3,6 +3,6 @@
 
 #include "pico/stdlib.h"
 
-typedef unsigned int size_t;
+#include "types.h"
 
 #endif
