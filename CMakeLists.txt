@@ -13,23 +13,29 @@ add_definitions(
 add_executable(eink
     BezierCurve.cpp
     Canvas.cpp
-    DS3231.cpp
     DejaVuSans.cpp
     DejaVuSerif.cpp
     EmBox.cpp
     FontSize.cpp
-    GD7965.cpp
     Led.cpp
     Path.cpp
-    RP2040_GPIO.cpp
-    RP2040_I2C.cpp
-    RP2040_SPI.cpp
+    stdmicro/hardware/RTC/ds3231/DS3231.cpp
+    stdmicro/hardware/display/eink/gd7965/GD7965.cpp
+    stdmicro/hardware/processor/rp2040/RP2040_GPIO.cpp
+    stdmicro/hardware/processor/rp2040/RP2040_I2C.cpp
+    stdmicro/hardware/processor/rp2040/RP2040_SPI.cpp
     e-ink.cpp
 )
 
+include_directories(
+    stdmicro
+    stdmicro/hardware
+    stdmicro/hardware/display/eink
+    stdmicro/hardware/processor
+)
+
 # Pull in our pico_stdlib which pulls in commonly used features
-target_link_libraries(
-    eink
+target_link_libraries(eink
     pico_stdlib
     hardware_spi
     hardware_gpio

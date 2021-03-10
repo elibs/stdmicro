@@ -2,9 +2,9 @@
 #define __STD_MICRO_GD7965_H
 
 #include "common.h"
-#include "Display.h"
-#include "SPI.h"
-#include "GPIO.h"
+#include "hardware/display/Display.h"
+#include "hardware/SPI.h"
+#include "hardware/GPIO.h"
 
 // NOTE: We will be using DMA for our SPI controller, as it allows us to have
 //       Direct Memory Access, and is a significantly faster transfer speed

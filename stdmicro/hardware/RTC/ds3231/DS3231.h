@@ -1,8 +1,8 @@
 #ifndef __DS3231_H
 #define __DS3231_H
 
-#include "RTC.h"
-#include "I2C.h"
+#include "hardware/RTC/RTC.h"
+#include "hardware/I2C.h"
 
 class DS3231: public RTC
 {
