@@ -1,55 +1,32 @@
 #include "GD7965.h"
 #include "Frequencies.h"
 
-GD7965::GD7965(size_t width, size_t height, spi_inst_t* spiInstance, GD7965Pins pinout):
-    mWidth(width),
-    mHeight(height),
-    mSpiInstance(spiInstance),
-    mPins(pinout)
+GD7965::GD7965(SPI* spi, GPIO* dataCmd, GPIO* busy, GPIO* reset):
+    mSpi(spi),
+    mDataCmd(dataCmd),
+    mBusy(busy),
+    mReset(reset)
 {
-    // Set up SPI 0 with a baud rate of 7MHz
-    spi_init(spiInstance, 20_MHz);
-
-    // Initialize the SPI pins
-
-    //gpio_set_function(mPins.spi.miso, GPIO_FUNC_SPI);
-    gpio_set_function(mPins.spi.sck, GPIO_FUNC_SPI);
-    gpio_set_function(mPins.spi.mosi, GPIO_FUNC_SPI);
-
-    gpio_init(mPins.spi.cs);
-    gpio_set_dir(mPins.spi.cs, GPIO_OUT); // output
-    gpio_put(mPins.spi.cs, 1); // output
-
-    // Initialize the dc, busy, and reset pins
-    gpio_init(mPins.dc);
-    gpio_set_dir(mPins.dc, GPIO_OUT); // output
-
-    gpio_init(mPins.busy);
-    gpio_set_dir(mPins.busy, GPIO_IN); // input
-
-    gpio_init(mPins.reset);
-    gpio_set_dir(mPins.reset, GPIO_OUT); // output
-
-    spi_set_format(spiInstance, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+    mSpi->format(8, false, false, true);
 }
 
 GD7965::~GD7965(void)
 {
-    spi_deinit(mSpiInstance);
+    // NOTE: We don't actually own the pointers, so we don't free them either!
 }
 
 void GD7965::command(unsigned char byte)
 {
-    gpio_put(mPins.dc, 0); // Set the pin low (command).
+    mDataCmd->put(false);
 
-    write(&byte, 1);
+    mSpi->write(&byte, 1);
 }
 
 void GD7965::sendData(const unsigned char* data, size_t size)
 {
-    gpio_put(mPins.dc, 1); // Set pin high (data)
+    mDataCmd->put(true);
 
-    write(data, size);
+    mSpi->write(data, size);
 }
 
 void GD7965::sendData(unsigned char data)
@@ -59,58 +36,58 @@ void GD7965::sendData(unsigned char data)
 
 void GD7965::draw(const unsigned char* data, size_t size)
 {
-    command(GD7965_DISPLAY_START_TX_NEW);
+    command(DISPLAY_START_TX_NEW);
 
     sendData(data, size);
 
-    command(GD7965_DISPLAY_REFRESH);
+    command(DISPLAY_REFRESH);
     sleep_ms(100);
     waitUntilIdle();
 }
 
-int GD7965::drawPartial(const unsigned char* data, size_t size, size_t x, size_t y, size_t width, size_t height)
+int GD7965::drawPartial(const unsigned char* data, size_t size, size_t x, size_t y, size_t w, size_t h)
 {
-    command(GD7965_PARTIAL_WINDOW);
+    command(PARTIAL_WINDOW);
 
-    width = (width / 8) + x - 1;
-    height += y - 1;
+    w = (w / 8) + x - 1;
+    h += y - 1;
 
     unsigned char windowData[9] = {
         (unsigned char)((x >> 5) & 0x03),
         (unsigned char)((x & 0x1f) << 3),
-        (unsigned char)((width >> 5) & 0x03),
-        (unsigned char)(0x07 | ((width & 0x1f) << 3)),
+        (unsigned char)((w >> 5) & 0x03),
+        (unsigned char)(0x07 | ((w & 0x1f) << 3)),
 
         (unsigned char)((y >> 8) & 0x03),
         (unsigned char)(y & 0x00ff),
-        (unsigned char)((height >> 8) & 0x03),
-        (unsigned char)(height & 0x00ff),
+        (unsigned char)((h >> 8) & 0x03),
+        (unsigned char)(h & 0x00ff),
 
         (unsigned char)0x00 // 0x01 is the other option, which scans in and outside of the window (and only draws the inside), so we can to only scan the inside, hence 0.
     };
     sendData(windowData, 9);
 
-    command(GD7965_START_PARTIAL);
+    command(START_PARTIAL);
 
     draw(data, size);
 
-    command(GD7965_STOP_PARTIAL);
+    command(STOP_PARTIAL);
     return 0;
 }
 
 void GD7965::reset(void)
 {
-    gpio_put(mPins.reset, 1); // Pull to high
+    mReset->put(true); // Pull to high
     sleep_ms(200);
-    gpio_put(mPins.reset, 0); // Set low, resetting the display.
+    mReset->put(false); // Set low, resetting the display.
     sleep_ms(2);
-    gpio_put(mPins.reset, 1); // Back to high, it is powered on.
+    mReset->put(true); // Pull to high, powering back on
     sleep_ms(200);
 }
 
 void GD7965::powerOn(void)
 {
-    command(GD7965_POWER_ON);
+    command(POWER_ON);
     sleep_ms(100);
     waitUntilIdle();
 }
@@ -145,14 +122,14 @@ void GD7965::clear(void)
 {
     buffer[0] = 0x00;
     command(0x10);
-    for (int i = 0; i < (mWidth / 8) * mHeight; ++i)
+    for (int i = 0; i < (width() / 8) * height(); ++i)
     {
         sendData(buffer, 1);
     }
 
     buffer[0] = 0xff;
     command(0x13);
-    for (int i = 0; i < (mWidth / 8) * mHeight; ++i)
+    for (int i = 0; i < (width() / 8) * height(); ++i)
     {
         sendData(buffer, 1);
     }
@@ -164,7 +141,7 @@ void GD7965::clear(void)
 
 void GD7965::waitUntilIdle(void)
 {
-    while (gpio_get(mPins.busy) == 0) // if busy is being held low (by the display), then we wait.
+    while (!*mBusy) // if busy is being held low (by the display), then we wait.
     {
         sleep_ms(100);
     } 
@@ -172,20 +149,11 @@ void GD7965::waitUntilIdle(void)
 
 void GD7965::powerOff(void)
 {
-    command(GD7965_POWER_OFF);
+    command(POWER_OFF);
     waitUntilIdle();
     sleep_ms(500);
 
     buffer[0] = 0xa5; // Required value for deep sleep.
-    command(GD7965_DEEP_SLEEP);
+    command(DEEP_SLEEP);
     sendData(buffer, 1);
-}
-
-void GD7965::write(const unsigned char* data, size_t len)
-{
-    gpio_put(mPins.spi.cs, 0); // Active
-
-    spi_write_blocking(mSpiInstance, data, len);
-
-    gpio_put(mPins.spi.cs, 1); // Inactive
 }

@@ -8,6 +8,8 @@
 #include "Frequencies.h"
 
 #include "RP2040_I2C.h"
+#include "RP2040_SPI.h"
+#include "RP2040_GPIO.h"
 
 #include "DS3231.h"
 
@@ -31,11 +33,15 @@
 #define RESET_PIN 7    // 10 // RESET // low for reset
 #define DC_PIN    8    // 11 // DC    // Data (high), Command (low)
 
+
+#define LED_PIN   25
+
 int m_i2a(char* out, unsigned int i, unsigned int base = 10);
 
 void mysprintf(char *out, const char *fmt, ...)
 {
     char* args = (char*)(&fmt + 1);
+    char* s;
     while(*fmt)
     {
         if(*fmt == '%')
@@ -63,6 +69,11 @@ void mysprintf(char *out, const char *fmt, ...)
                 case('p'):
                     break;
                 case('s'):
+                    s = (char*)(*(char**)args);
+                    while (*s)
+                    {
+                        *out++ = *s++;
+                    }
                     break;
                 case('u'):
                     break;
@@ -103,8 +114,7 @@ int m_i2a(char* out, unsigned int num, unsigned int base)
 
 int main()
 {
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
+    RP2040_GPIO led(LED_PIN, GPIO::SIO, GPIO::Output);
 
     RP2040_I2C i2c(i2c1, RP2040_I2C_Pins{.sck = 10, .sda = 11}, 100_KHz);
     DS3231 rtc(&i2c);
@@ -121,31 +131,35 @@ int main()
     //    .isDaylightSavingsTime = 0
     //});
 
-    blink(1);
-    GD7965 eink(800, 480, spi0, {
-        .spi = {
-            .miso = MISO_PIN,
-            .cs = CS_PIN,
-            .sck = SCK_PIN,
-            .mosi = MOSI_PIN
-        },
-        .dc = DC_PIN,
-        .busy = BUSY_PIN,
-        .reset = RESET_PIN
-    });
-    blink(2);
+    blink(&led, 1);
+    RP2040_SPI spi(spi0, {
+        .cs = CS_PIN,
+        .miso = MISO_PIN,
+        .mosi = MOSI_PIN,
+        .sck = SCK_PIN
+    }, 20_MHz);
+    blink(&led, 2, 100);
+    RP2040_GPIO displayResetPin(RESET_PIN, GPIO::SIO, GPIO::Output);
+    blink(&led, 2, 100);
+    RP2040_GPIO displayBusyPin(BUSY_PIN, GPIO::SIO, GPIO::Input);
+    blink(&led, 2, 100);
+    RP2040_GPIO displayDataCmdPin(DC_PIN, GPIO::SIO, GPIO::Output);
+    blink(&led, 2, 100);
+
+    GD7965 eink(&spi, &displayDataCmdPin, &displayBusyPin, &displayResetPin);
+    blink(&led, 2);
 
     Canvas c(800, 480);
     DejaVuSans dvs;
     Font f(&dvs, 16_pt);
     f.setCanvas(&c);
 
-    eink.init();
     f.write("Test   ");
+    eink.init();
     eink.draw(c.get(), c.size());
 
     eink.powerOff();
-    blink(3);
+    blink(&led, 3);
 
     char timestampbuf[50];
 
@@ -185,13 +199,13 @@ It had been over a year since the coming of the Everstorm and the fall of Alethk
     )__";
 
 
-    blink(7, 100);
+    blink(&led, 7, 100);
     //for (int i = 8; i < 30 && offset != 0; ++i)
     //{
     //    f.setFontSize(1.73 * i);
         offset = f.write(str);
     //}
-    blink(7, 100);
+    blink(&led, 7, 100);
 
     eink.restart();
     eink.draw(c.get(), c.size());
@@ -199,7 +213,7 @@ It had been over a year since the coming of the Everstorm and the fall of Alethk
     */
 
     // Finally, blink the LED to say we are done.
-    blink(10, 100);
+    blink(&led, 10, 100);
     while (1)
     {
         sleep_ms(1000);

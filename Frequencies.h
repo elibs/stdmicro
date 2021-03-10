@@ -1,8 +1,7 @@
-#ifndef __FREQUENCIES_H
-#define __FREQUENCIES_H
+#ifndef __STD_MICRO_FREQUENCIES_H
+#define __STD_MICRO_FREQUENCIES_H
 
-#include "common.h"
-
+#include "types.h"
 
 constexpr size_t operator "" _Hz(unsigned long long value)
 {

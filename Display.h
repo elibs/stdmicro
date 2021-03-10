@@ -15,6 +15,8 @@ public:
     virtual void draw(const unsigned char* data, size_t size) = 0;
 
     virtual constexpr unsigned int dpi(void) const = 0;
+    virtual constexpr unsigned int height(void) const = 0;
+    virtual constexpr unsigned int width(void) const = 0;
 
     /**
      * Redraw a part of the screen, not the entire thing

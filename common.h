@@ -1,8 +1,17 @@
-#ifndef __COMMON_H
-#define __COMMON_H
-
-#include "pico/stdlib.h"
+#ifndef __STD_MICRO_COMMON_H
+#define __STD_MICRO_COMMON_H
 
 #include "types.h"
+
+#define MICROCONTROLLER_MOCKED 0
+#define MICROCONTROLLER_RP2040 1
+
+#ifndef MICROCONTROLLER
+#define MICROCONTROLLER MICROCONTROLLER_MOCKED
+#endif
+
+#if (MICROCONTROLLER == MICROCONTROLLER_RP2040)
+    #include "pico/stdlib.h"
+#endif
 
 #endif

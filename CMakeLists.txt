@@ -6,6 +6,10 @@ project(eink)
 
 pico_sdk_init()
 
+add_definitions(
+    -DMICROCONTROLLER=MICROCONTROLLER_RP2040
+)
+
 add_executable(eink
     BezierCurve.cpp
     Canvas.cpp
@@ -17,7 +21,9 @@ add_executable(eink
     GD7965.cpp
     Led.cpp
     Path.cpp
+    RP2040_GPIO.cpp
     RP2040_I2C.cpp
+    RP2040_SPI.cpp
     e-ink.cpp
 )
 

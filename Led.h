@@ -3,10 +3,8 @@
 
 #include "pico/stdlib.h"
 
-#define LED_PIN 25
+#include "GPIO.h"
 
-void blink(int count, uint delay = 250);
-
-void hang(void);
+void blink(GPIO* led, int count, uint delay = 250);
 
 #endif

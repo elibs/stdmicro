@@ -3,4 +3,6 @@
 
 #include <cstddef>
 
+typedef signed long long ssize_t;
+
 #endif
