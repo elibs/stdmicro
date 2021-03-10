@@ -7,7 +7,7 @@ project(eink)
 pico_sdk_init()
 
 add_definitions(
-    -DMICROCONTROLLER=MICROCONTROLLER_RP2040
+    -DPROCESSOR=PROCESSOR_RP2040
 )
 
 add_executable(eink
