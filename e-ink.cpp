@@ -115,7 +115,7 @@ int main()
 {
     RP2040_GPIO led(LED_PIN, GPIO::SIO, GPIO::Output);
 
-    RP2040_I2C i2c(i2c1, RP2040_I2C_Pins{.sck = 10, .sda = 11}, 100_KHz);
+    RP2040_I2C i2c(i2c1, I2CPins{.sck = 10, .sda = 11}, 100_KHz);
     DS3231 rtc(&i2c);
 
     //rtc.write({

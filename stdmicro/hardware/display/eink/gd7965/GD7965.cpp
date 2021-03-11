@@ -122,14 +122,14 @@ void GD7965::clear(void)
 {
     buffer[0] = 0x00;
     command(0x10);
-    for (int i = 0; i < (width() / 8) * height(); ++i)
+    for (size_t i = 0; i < (width() / 8) * height(); ++i)
     {
         sendData(buffer, 1);
     }
 
     buffer[0] = 0xff;
     command(0x13);
-    for (int i = 0; i < (width() / 8) * height(); ++i)
+    for (size_t i = 0; i < (width() / 8) * height(); ++i)
     {
         sendData(buffer, 1);
     }

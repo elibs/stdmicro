@@ -27,8 +27,8 @@ private:
     size_t mBaudRate;
     RP2040_GPIO mCs;
     RP2040_GPIO mSck;
-    RP2040_GPIO mMosi;
     RP2040_GPIO mMiso;
+    RP2040_GPIO mMosi;
 };
 
 #endif

@@ -3,15 +3,15 @@
 
 struct tm
 {
-    int second;
-    int minute;
-    int hour;
-    int dayOfMonth;
-    int month;
-    int year;
-    int dayOfWeek;
-    int dayOfYear;
-    int isDaylightSavingsTime;
+    unsigned char second;
+    unsigned char minute;
+    unsigned char hour;
+    unsigned char dayOfMonth;
+    unsigned char month;
+    unsigned int year;
+    unsigned char dayOfWeek;
+    unsigned short dayOfYear;
+    unsigned char isDaylightSavingsTime;
 };
 
 inline unsigned char bcd2bin(unsigned char val)

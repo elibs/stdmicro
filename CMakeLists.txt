@@ -10,6 +10,13 @@ add_definitions(
     -DPROCESSOR=PROCESSOR_RP2040
 )
 
+add_compile_options(
+    -Wall
+    -Werror
+    # -Wextra   ### NOTE: These can't be enabled due to pico's sdk having errors at that point. They will eventually be
+    # -pedantic ###       added back in, once pico-sdk is part of stdmicro.
+)
+
 add_executable(eink
     BezierCurve.cpp
     Canvas.cpp
