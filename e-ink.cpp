@@ -206,7 +206,15 @@ int main()
     rtc.disableAlarm(0);
     rtc.disableAlarm(1);
 
+    RTC::AlarmError err = rtc.setAlarm(1, t, RTC::EACH_MINUTE | RTC::EACH_HOUR | RTC::EACH_DAY);
+    if (err != RTC::E_ALL_GOOD)
+    {
+        blink(&led, 4, 10000);
+        panic("Wat");
+    }
+
     RP2040_GPIO alarm(15, GPIO::SIO, GPIO::Input);
+    alarm.pullUp();
     int draw = 0;
     while (true)
     {
@@ -217,23 +225,15 @@ int main()
         eink.drawPartial(c2.get(), c2.size(), 0, 100, c2.width(), c2.height());
         eink.powerOff();
 
-        rtc.read(t);
-        t.second += 10;
-        RTC::AlarmError err = rtc.setAlarm(0, t, 0x0e);
-        if (err != RTC::E_ALL_GOOD)
-        {
-            blink(&led, 4, 10000);
-            panic("Wat");
-        }
-
-        while (!alarm)
+        while (alarm)
         {
             sleep_ms(100);
             blink(&led, 1);
         }
         
-        blink(&led, 40);
+        blink(&led, 5, 50);
         rtc.clearAlarm(1);
+        alarm.pullUp();
         c2.clear();
         f.reset();
     }

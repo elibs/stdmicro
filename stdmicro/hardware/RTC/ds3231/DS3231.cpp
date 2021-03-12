@@ -65,8 +65,8 @@ RTC::AlarmError DS3231::setAlarm(unsigned int index, const tm& alarmTime, unsign
         return RTC::E_MUST_ENABLE_INTERRUPT;
     }
 
-    mBuffer[0] = Alarm1;
-    //mBuffer[0] = index == 0 ? Alarm1 : Alarm2;
+    //mBuffer[0] = Alarm1;
+    mBuffer[0] = index == 0 ? Alarm1 : Alarm2;
     mBuffer[1] = bin2bcd(alarmTime.second) | (flag(frequencyFlags & RTC::EACH_SECOND) << 7);
     mBuffer[2] = bin2bcd(alarmTime.minute) | (flag(frequencyFlags & RTC::EACH_MINUTE) << 7);
     mBuffer[3] = bin2bcd(alarmTime.hour) | (flag(frequencyFlags & RTC::EACH_HOUR) << 7);
@@ -83,16 +83,16 @@ RTC::AlarmError DS3231::setAlarm(unsigned int index, const tm& alarmTime, unsign
 
     mBuffer[4] |= (flag(frequencyFlags & EACH_DAY) << 7) | dowFlag;
 
-    //if (index == 1)
-    //{
-    //    mBuffer[1] = mBuffer[0];
-    //}
+    if (index == 1)
+    {
+        mBuffer[1] = mBuffer[0];
+    }
 
-    //mI2c->write(address(), mBuffer + index, 5 - index);
-    mI2c->write(address(), mBuffer, 5);
+    mI2c->write(address(), mBuffer + index, 5 - index);
+    //mI2c->write(address(), mBuffer, 5);
 
-    //control |= (0x01 << index);
-    control |= 0x01;
+    control |= (0x01 << index);
+    //control |= 0x01;
     mBuffer[0] = Control;
     mBuffer[1] = control;
     mI2c->write(address(), mBuffer, 2);
