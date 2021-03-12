@@ -145,14 +145,13 @@ int main()
     DS3231 rtc(&i2c);
 
     //rtc.write({
-    //    .second = 5,
-    //    .minute = 18,
-    //    .hour = 17,
-    //    .dayOfMonth = 26,
-    //    .month = 2,
+    //    .second = 0,
+    //    .minute = 11,
+    //    .hour = 9 + 12,
+    //    .dayOfMonth = 11,
+    //    .month = 3,
     //    .year = 2021,
-    //    .dayOfWeek = 5,
-    //    .dayOfYear = 57,
+    //    .dayOfWeek = 4,
     //    .isDaylightSavingsTime = 0
     //});
 
@@ -219,19 +218,18 @@ int main()
     while (true)
     {
         rtc.read(t);
-        mysprintf(timestampbuf, "Latest: %d-%d-%d@%d:%d:%d %s\n%d", t.year, t.month, t.dayOfMonth, t.hour > 12 ? t.hour - 12 : t.hour, t.minute, t.second, t.hour > 12 ? "PM" : "AM", ++draw);
+        for (int i = 0; i < 50; ++i)
+        {
+            timestampbuf[i] = '\0';
+        }
+        mysprintf(timestampbuf, " %d: %d-%d-%d@%d:%d:%d %s\n%d", ++draw, t.year, t.month, t.dayOfMonth, t.hour > 12 ? t.hour - 12 : t.hour, t.minute, t.second, t.hour > 12 ? "PM" : "AM");
         f.write(timestampbuf);
         eink.restart();
         eink.drawPartial(c2.get(), c2.size(), 0, 100, c2.width(), c2.height());
         eink.powerOff();
 
-        while (alarm)
-        {
-            sleep_ms(100);
-            blink(&led, 1);
-        }
+        sleep_goto_dormant_until_pin(15, true, false);
         
-        blink(&led, 5, 50);
         rtc.clearAlarm(1);
         alarm.pullUp();
         c2.clear();
