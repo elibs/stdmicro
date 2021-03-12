@@ -47,6 +47,7 @@ target_link_libraries(eink
     hardware_spi
     hardware_gpio
     hardware_i2c
+    hardware_xosc
 )
 
 pico_add_extra_outputs(eink)

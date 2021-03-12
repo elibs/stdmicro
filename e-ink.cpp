@@ -15,6 +15,8 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/spi.h"
+#include "hardware/regs/io_bank0.h"
+#include "hardware/xosc.h"
 
 // Suggested that CPOL = 0 and CPHL = 0
 
@@ -73,6 +75,7 @@ void mysprintf(char *out, const char *fmt, ...)
                     {
                         *out++ = *s++;
                     }
+                    args += sizeof(char**);
                     break;
                 case('u'):
                     break;
@@ -109,6 +112,29 @@ int m_i2a(char* out, unsigned int num, unsigned int base)
         *out++ = table[((num / p) % base)];
     }
     return digits + (neg ? 1 : 0);
+}
+
+void sleep_goto_dormant_until_pin(uint gpio_pin, bool edge, bool high) {
+    bool low = !high;
+    bool level = !edge;
+
+    // Configure the appropriate IRQ at IO bank 0
+    assert(gpio_pin < NUM_BANK0_GPIOS);
+
+    uint32_t event = 0;
+
+    if (level && low) event = IO_BANK0_DORMANT_WAKE_INTE0_GPIO0_LEVEL_LOW_BITS;
+    if (level && high) event = IO_BANK0_DORMANT_WAKE_INTE0_GPIO0_LEVEL_HIGH_BITS;
+    if (edge && high) event = IO_BANK0_DORMANT_WAKE_INTE0_GPIO0_EDGE_HIGH_BITS;
+    if (edge && low) event = IO_BANK0_DORMANT_WAKE_INTE0_GPIO0_EDGE_LOW_BITS;
+
+    gpio_set_dormant_irq_enabled(gpio_pin, event, true);
+
+    xosc_dormant();
+    // Execution stops here until woken up
+
+    // Clear the irq so we can go back to dormant mode again if we want
+    gpio_acknowledge_irq(gpio_pin, event);
 }
 
 int main()
@@ -170,6 +196,47 @@ int main()
     eink.restart();
     eink.draw(c.get(), c.size());
     eink.powerOff();
+
+    Canvas c2(800, 120);
+    f.setCanvas(&c2);
+
+    rtc.enableInterrupt();
+    rtc.clearAlarm(0);
+    rtc.clearAlarm(1);
+    rtc.disableAlarm(0);
+    rtc.disableAlarm(1);
+
+    RP2040_GPIO alarm(15, GPIO::SIO, GPIO::Input);
+    int draw = 0;
+    while (true)
+    {
+        rtc.read(t);
+        mysprintf(timestampbuf, "Latest: %d-%d-%d@%d:%d:%d %s\n%d", t.year, t.month, t.dayOfMonth, t.hour > 12 ? t.hour - 12 : t.hour, t.minute, t.second, t.hour > 12 ? "PM" : "AM", ++draw);
+        f.write(timestampbuf);
+        eink.restart();
+        eink.drawPartial(c2.get(), c2.size(), 0, 100, c2.width(), c2.height());
+        eink.powerOff();
+
+        rtc.read(t);
+        t.second += 10;
+        RTC::AlarmError err = rtc.setAlarm(0, t, 0x0e);
+        if (err != RTC::E_ALL_GOOD)
+        {
+            blink(&led, 4, 10000);
+            panic("Wat");
+        }
+
+        while (!alarm)
+        {
+            sleep_ms(100);
+            blink(&led, 1);
+        }
+        
+        blink(&led, 40);
+        rtc.clearAlarm(1);
+        c2.clear();
+        f.reset();
+    }
 
 
     /*
