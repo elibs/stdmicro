@@ -1,6 +1,16 @@
 #include "DejaVuSerif.h"
 
 #include "Path.h"
+/**
+ * Font generated via use of converter.py, from DejaVuSerif font, which is
+ * distributed under the license of:
+ *
+ * Bitstream Vera and Public Domain
+ *
+ * Converted to svg with FontForge.
+ *
+ * NOTE: Glyphs were removed to reduce overall size.
+ */
 
 DejaVuSerif::~DejaVuSerif(void)
 {

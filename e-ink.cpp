@@ -1,5 +1,4 @@
 #include "Led.h"
-#include "hardware/display/eink/gd7965/GD7965.h"
 #include "Font.h"
 #include "Path.h"
 #include "DejaVuSans.h"
@@ -10,6 +9,7 @@
 #include "hardware/processor/rp2040/RP2040_SPI.h"
 #include "hardware/processor/rp2040/RP2040_GPIO.h"
 
+#include "hardware/display/eink/gd7965/GD7965.h"
 #include "hardware/RTC/ds3231/DS3231.h"
 
 #include "pico/stdlib.h"
@@ -17,8 +17,6 @@
 #include "hardware/spi.h"
 #include "hardware/regs/io_bank0.h"
 #include "hardware/xosc.h"
-
-// Suggested that CPOL = 0 and CPHL = 0
 
 // // Just for a note:
 //      Name      GPIO // PIN
@@ -34,11 +32,16 @@
 #define RESET_PIN 7    // 10 // RESET // low for reset
 #define DC_PIN    8    // 11 // DC    // Data (high), Command (low)
 
-
 #define LED_PIN   25
 
 int m_i2a(char* out, unsigned int i, unsigned int base = 10);
 
+/**
+ * Ancient code I wrote _way_ ago, probably should be rewritten, but was good
+ * enough for a quick sprintf for RTC drawing examples.
+ *
+ * Can be found on dreamincode.net
+ */
 void mysprintf(char *out, const char *fmt, ...)
 {
     char* args = (char*)(&fmt + 1);
@@ -114,6 +117,38 @@ int m_i2a(char* out, unsigned int num, unsigned int base)
     return digits + (neg ? 1 : 0);
 }
 
+/**
+ * This example of how to fall to dormant mode until a GPIO is pulled to a
+ * specific state is courtesy of raspberrypi/pico-extras, modified slightly to
+ * simplify for this use case.
+ *
+ * Github:
+ * https://github.com/raspberrypi/pico-extras
+ *
+ * The associated license information:
+ *
+ * Copyright 2020 (c) 2020 Raspberry Pi (Trading) Ltd.
+ * 
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+ *    disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+ *    disclaimer in the documentation and/or other materials provided with the distribution.
+ * 
+ * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 void sleep_goto_dormant_until_pin(uint gpio_pin, bool edge, bool high) {
     bool low = !high;
     bool level = !edge;
@@ -144,6 +179,9 @@ int main()
     RP2040_I2C i2c(i2c1, I2CPins{.sck = 10, .sda = 11}, 100_KHz);
     DS3231 rtc(&i2c);
 
+    /**
+     * Example of how to write out the date and time to a RTC device.
+     */
     //rtc.write({
     //    .second = 0,
     //    .minute = 11,
@@ -236,49 +274,9 @@ int main()
         f.reset();
     }
 
-
-    /*
-    size_t offset = 1;
-    const char* str = R"__(# Chapter One of Stormlight Four
-
-> _First, you must get a spren to approach.
-> 
-> The type of gemstone is relevant to this, as some spren are naturally more intrigued by certain gemstones. More importantly, it is essential to provide the spren with something it knows and loves. The spren must be made to feel calm. A good fire for a flamespren, for example, is a must._
-> 
-> -Lecture on Fabrial Mechanics as presented by Navani Kholin to the Coalition of Monarchs, Urithiru.
-
-Lirin was impressed at how calm he felt as he checked the child’s gums for scurvy. Years of training as a surgeon served him well today. Breathing exercises-intended to keep his hands steady-worked just as well for harboring fugitives as they did for surgery.
-
-"Here," he said to the child's mother, digging from his pocket a small carved carapace chit. "Show this to woman at the dining pavilion. She'll get you some juice for your son. Make certain he drinks it all, each morning."
-
-"Very thank you," the woman said in a thick Herdazian accent. She gathered her son close, then looked to Lirin with haunted eyes. "If... if child... found..."
-
-"I will make certain you're notified if we hear word of your other children," Lirin promised. "I'm sorry for your loss."
-
-She nodded, wiped her cheeks, and carried the child toward the town. The morning fog obscured Hearthstone, so from the outside, it seemed a group of dark, shadowy lumps. Like tumors. Lirin could barely make out the tarps stretched between buildings, offering meager shelter for the many refugees pouring out of Herdaz. Entire streets were closed off, and phantom sounds-plates clinking, people talking-rose through the fog.
-
-Those shanties would never last a storm, of course, but could be quickly torn down and stowed. There just wasn't enough housing otherwise. He glanced at the line of those waiting for admittance today. Storms. How many more could the town hold? The villages closer to the border must be filled to capacity, if so many were making their way to Hearthstone.
-
-It had been over a year since the coming of the Everstorm and the fall of Alethkar. A year during which the country of Herdaz-Alethkar's small cousin to the north west-had somehow kept fighting. Two months ago, the enemy had finally decided to crush Herdaz for good, and that's when the refugees had started appearing. Like usual, the soldiers fought while the common people-their fields trampled-starved and were forced out of their homes, looking to escape the conflict.
-    )__";
-
-
-    blink(&led, 7, 100);
-    //for (int i = 8; i < 30 && offset != 0; ++i)
-    //{
-    //    f.setFontSize(1.73 * i);
-        offset = f.write(str);
-    //}
-    blink(&led, 7, 100);
-
-    eink.restart();
-    eink.draw(c.get(), c.size());
-    eink.powerOff();
-    */
-
     // Finally, blink the LED to say we are done.
     blink(&led, 10, 100);
-    while (1)
+    while (true)
     {
         sleep_ms(1000);
     }
