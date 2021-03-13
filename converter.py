@@ -4,9 +4,10 @@ from svg.path import parse_path
 from svg.path.path import *
 from xml.dom import minidom
 import sys
+import os
 
 # read the SVG file
-doc = minidom.parse('/home/jblades/DejaVuSans.svg')
+doc = minidom.parse(os.environ["HOME"] + "/DejaVuSans.svg")
 pathArray = [path for path in doc.getElementsByTagName('glyph')]
 
 # print the line draw commands
