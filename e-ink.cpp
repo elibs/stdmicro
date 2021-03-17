@@ -79,6 +79,10 @@ void mysprintf(char *out, const char *fmt, ...)
                         *out++ = *s++;
                     }
                     args += sizeof(char**);
+                    if (*out == '\0')
+                    {
+                        --out;
+                    }
                     break;
                 case('u'):
                     break;
