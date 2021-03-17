@@ -35,6 +35,15 @@ public:
     void enableInterrupt(void) override;
     void disableInterrupt(void) override;
 
+    bool isStopped(void);
+
+    inline unsigned char read(unsigned char reg)
+    {
+        mI2c->write(address(), &reg, 1);
+        mI2c->read(address(), &reg, 1);
+        return reg;
+    }
+
 private:
     I2C* mI2c;
     char mBuffer[8];

@@ -17,6 +17,14 @@ void DS3231::write(const tm& timespec)
     mBuffer[7] = bin2bcd(timespec.year - 2000U);
     mI2c->write(address(), mBuffer, 8);
 
+    // Ensure that the oscillator is enabled.
+    mBuffer[0] = Control;
+    mI2c->write(address(), mBuffer, 1);
+    mI2c->read(address(), mBuffer + 1, 1);
+    mBuffer[1] &= ~0x80;
+    mI2c->write(address(), mBuffer, 2);
+
+    // Clear the oscillator stopped flag.
     mBuffer[0] = Status;
     mI2c->write(address(), mBuffer, 1);
     mI2c->read(address(), mBuffer + 1, 1);
@@ -65,7 +73,6 @@ RTC::AlarmError DS3231::setAlarm(unsigned int index, const tm& alarmTime, unsign
         return RTC::E_MUST_ENABLE_INTERRUPT;
     }
 
-    //mBuffer[0] = Alarm1;
     mBuffer[0] = index == 0 ? Alarm1 : Alarm2;
     mBuffer[1] = bin2bcd(alarmTime.second) | (flag(frequencyFlags & RTC::EACH_SECOND) << 7);
     mBuffer[2] = bin2bcd(alarmTime.minute) | (flag(frequencyFlags & RTC::EACH_MINUTE) << 7);
@@ -89,10 +96,8 @@ RTC::AlarmError DS3231::setAlarm(unsigned int index, const tm& alarmTime, unsign
     }
 
     mI2c->write(address(), mBuffer + index, 5 - index);
-    //mI2c->write(address(), mBuffer, 5);
 
     control |= (0x01 << index);
-    //control |= 0x01;
     mBuffer[0] = Control;
     mBuffer[1] = control;
     mI2c->write(address(), mBuffer, 2);
@@ -133,9 +138,10 @@ void DS3231::enableInterrupt(void)
 
     // a = 10, b = 11, c = 12 = 1100
     // 0x1c = 00011100
-    mBuffer[1] |= 0x1c;
+    mBuffer[1] |= 0x04;
     mI2c->write(address(), mBuffer, 2);
 
+    // Disable 32kHz square wave.
     mBuffer[0] = Status;
     mI2c->write(address(), mBuffer, 1);
     mI2c->read(address(), mBuffer + 1, 1);
@@ -151,4 +157,12 @@ void DS3231::disableInterrupt(void)
 
     mBuffer[1] &= ~0x04;
     mI2c->write(address(), mBuffer, 2);
+}
+
+bool DS3231::isStopped(void)
+{
+    mBuffer[0] = Status;
+    mI2c->write(address(), mBuffer, 1);
+    mI2c->read(address(), mBuffer, 1);
+    return mBuffer[1] & 0x80;
 }
