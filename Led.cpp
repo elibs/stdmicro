@@ -1,7 +1,9 @@
 #include "Led.h"
 #include "hardware/gpio.h"
 
-void blink(GPIO* led, int count, uint delay)
+#include "pico/stdlib.h" // for sleep_ms
+
+void blink(GPIO* led, int count, unsigned int delay)
 {
     while (count--)
     {
