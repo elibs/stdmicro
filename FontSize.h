@@ -4,6 +4,7 @@
 struct FontSize
 {
 public:
+    static const int POINT_PER_INCH = 72;
     unsigned int pt;
 
     operator unsigned int(void) const;

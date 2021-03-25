@@ -30,7 +30,7 @@ inline void swap(T& a, T& b)
     b = c;
 }
 
-inline void drawLine(EmBox* box, coord a, coord b)
+static inline void drawLine(EmBox* box, coord a, coord b)
 {
     if (a.x == b.x && a.y == b.y)
     {
