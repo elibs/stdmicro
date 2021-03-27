@@ -18,6 +18,8 @@
 #include "hardware/regs/io_bank0.h"
 #include "hardware/xosc.h"
 
+#include "hardware/adc.h"
+
 // // Just for a note:
 //      Name      GPIO // PIN
 #define POWER          // 36 // 3.3v
@@ -33,93 +35,6 @@
 #define DC_PIN    8    // 11 // DC    // Data (high), Command (low)
 
 #define LED_PIN   25
-
-int m_i2a(char* out, unsigned int i, unsigned int base = 10);
-
-/**
- * Ancient code I wrote _way_ ago, probably should be rewritten, but was good
- * enough for a quick sprintf for RTC drawing examples.
- *
- * Can be found on dreamincode.net
- */
-void mysprintf(char *out, const char *fmt, ...)
-{
-    char* args = (char*)(&fmt + 1);
-    char* s;
-    while(*fmt)
-    {
-        if(*fmt == '%')
-        {
-            switch(*++fmt)
-            {
-                case('%'):
-                    *out = '%';
-                    break;
-                case('c'):
-                    *out = *(char*)args;
-                    args += sizeof(char*);
-                    break;
-                case('d'):
-                case('i'):
-                    out += m_i2a(out, *(int*)args) - 1;
-                    args += sizeof(int*);
-                    break;
-                case('x'):
-                    out += m_i2a(out, *(int*)args, 16) - 1;
-                    args += sizeof(int*);
-                    break;
-                case('o'):
-                    break;
-                case('p'):
-                    break;
-                case('s'):
-                    s = (char*)(*(char**)args);
-                    while (*s)
-                    {
-                        *out++ = *s++;
-                    }
-                    args += sizeof(char**);
-                    if (*out == '\0')
-                    {
-                        --out;
-                    }
-                    break;
-                case('u'):
-                    break;
-                default:
-                    break;
-            }
-        }
-        else
-        {
-            *out = *fmt;
-        }
-        out++;
-        fmt++;
-    }
-    *out = '\0';
-}
-
-int m_i2a(char* out, unsigned int num, unsigned int base)
-{
-    bool neg = false;
-    const char* table = "0123456789abcdef";
-    if((num & (1 << 31)) && base == 10)
-    {
-        *out++ = '-';
-        neg = num *= -1;
-    }
-    int digits;
-    int numc = num;
-    for(digits = numc == 0 ? 1 : 0; numc != 0; digits++, numc /= base);
-    for(int i = 0; i < digits; i++)
-    {
-        unsigned int p = 1;
-        for(int j = 1; j < digits - i; j++, p *= base);
-        *out++ = table[((num / p) % base)];
-    }
-    return digits + (neg ? 1 : 0);
-}
 
 /**
  * This example of how to fall to dormant mode until a GPIO is pulled to a
@@ -176,6 +91,8 @@ void sleep_goto_dormant_until_pin(uint gpio_pin, bool edge, bool high) {
     gpio_acknowledge_irq(gpio_pin, event);
 }
 
+#include <cstdio>
+
 int main()
 {
     RP2040_GPIO led(LED_PIN, GPIO::SIO, GPIO::Output);
@@ -188,12 +105,12 @@ int main()
      */
     //rtc.write({
     //    .second = 0,
-    //    .minute = 11,
-    //    .hour = 9 + 12,
-    //    .dayOfMonth = 11,
+    //    .minute = 13,
+    //    .hour = 12 + 8,
+    //    .dayOfMonth = 14,
     //    .month = 3,
     //    .year = 2021,
-    //    .dayOfWeek = 4,
+    //    .dayOfWeek = 1,
     //    .isDaylightSavingsTime = 0
     //});
 
@@ -220,42 +137,53 @@ int main()
     Font f(&dvs, 16_pt);
     f.setCanvas(&c);
 
-    f.write("Test   ");
+    char timestampbuf[110];
+
+    adc_init();
+    adc_gpio_init(27);
+    adc_gpio_init(28);
+    adc_set_temp_sensor_enabled(false);
+    adc_select_input(1);
+
+    const float batteryVoltageMultiplier = (3.3 * 2.0) / 4096.0;
+    float batteryVoltage = adc_read();
+    float groundVoltage;
+    sprintf(timestampbuf, "Reading: %f\n", batteryVoltage * batteryVoltageMultiplier);
+
+    f.write(timestampbuf);
+
     eink.init();
     eink.draw(c.get(), c.size());
-
     eink.powerOff();
-    blink(&led, 3);
-
-    char timestampbuf[50];
 
     tm t;
     rtc.read(t);
-    mysprintf(timestampbuf, "Date: %d-%d-%d@%d:%d:%d %s", t.year, t.month, t.dayOfMonth, t.hour > 12 ? t.hour - 12 : t.hour, t.minute, t.second, t.hour > 12 ? "PM" : "AM");
+    sprintf(timestampbuf, "Date: %d-%d-%d@%d:%d:%d %s\n ", t.year, t.month, t.dayOfMonth, t.hour > 12 ? t.hour - 12 : t.hour, t.minute, t.second, t.hour > 12 ? "PM" : "AM");
 
     f.write(timestampbuf);
-    eink.restart();
-    eink.draw(c.get(), c.size());
-    eink.powerOff();
 
-    Canvas c2(800, 120);
-    f.setCanvas(&c2);
+    unsigned char status = rtc.read(DS3231::Status);
+    unsigned char control = rtc.read(DS3231::Control);
+    sprintf(timestampbuf, "Control Register: %x\nStatus Register: %x\n", control, status);
+    f.write(timestampbuf);
+
+    //Canvas c2(800, 120);
+    //f.setCanvas(&c2);
 
     rtc.enableInterrupt();
-    rtc.clearAlarm(0);
-    rtc.clearAlarm(1);
     rtc.disableAlarm(0);
     rtc.disableAlarm(1);
+    rtc.clearAlarm(0);
+    rtc.clearAlarm(1);
 
-    RTC::AlarmError err = rtc.setAlarm(1, t, RTC::EACH_MINUTE | RTC::EACH_HOUR | RTC::EACH_DAY);
-    if (err != RTC::E_ALL_GOOD)
-    {
-        blink(&led, 4, 10000);
-        panic("Wat");
-    }
+    //RTC::AlarmError err = rtc.setAlarm(1, t, RTC::EACH_MINUTE | RTC::EACH_HOUR | RTC::EACH_DAY);
+    //if (err != RTC::E_ALL_GOOD)
+    //{
+    //    blink(&led, 4, 10000);
+    //}
 
-    RP2040_GPIO alarm(15, GPIO::SIO, GPIO::Input);
-    alarm.pullUp();
+    //RP2040_GPIO alarm(15, GPIO::SIO, GPIO::Input);
+    //alarm.pullUp();
     int draw = 0;
     while (true)
     {
@@ -264,18 +192,33 @@ int main()
         {
             timestampbuf[i] = '\0';
         }
-        mysprintf(timestampbuf, " %d: %d-%d-%d@%d:%d:%d %s\n%d", ++draw, t.year, t.month, t.dayOfMonth, t.hour > 12 ? t.hour - 12 : t.hour, t.minute, t.second, t.hour > 12 ? "PM" : "AM");
+
+        adc_select_input(2);
+        groundVoltage = adc_read();
+
+        adc_select_input(1);
+        batteryVoltage = adc_read();
+
+        sprintf(timestampbuf, "Ground: %f\nRaw: %f, Reading: %f\nLast Draw: %d-%d-%d@%d:%d:%d %s\nPages Drawn: %d", groundVoltage, batteryVoltage, batteryVoltage * batteryVoltageMultiplier, t.year, t.month, t.dayOfMonth, t.hour > 12 ? t.hour - 12 : t.hour, t.minute, t.second, t.hour > 12 ? "PM" : "AM", ++draw);
         f.write(timestampbuf);
         eink.restart();
-        eink.drawPartial(c2.get(), c2.size(), 0, 100, c2.width(), c2.height());
+        eink.draw(c.get(), c.size());
+        //eink.drawPartial(c2.get(), c2.size(), 0, 100, c2.width(), c2.height());
         eink.powerOff();
 
-        sleep_goto_dormant_until_pin(15, true, false);
-        
-        rtc.clearAlarm(1);
-        alarm.pullUp();
-        c2.clear();
+        //sleep_goto_dormant_until_pin(15, true, false);
+        //
+        //rtc.clearAlarm(1);
+        //alarm.pullUp();
+        //c2.clear();
+        c.clear();
         f.reset();
+        sleep_ms(10000);
+
+        if (batteryVoltage <= 2.0)
+        {
+            break;
+        }
     }
 
     // Finally, blink the LED to say we are done.
