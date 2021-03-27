@@ -5,12 +5,12 @@
 #include "DejaVuSerif.h"
 #include "Frequencies.h"
 
-#include "hardware/processor/rp2040/RP2040_I2C.h"
-#include "hardware/processor/rp2040/RP2040_SPI.h"
-#include "hardware/processor/rp2040/RP2040_GPIO.h"
+#include "hardware/processor/RP2040/RP2040_I2C.h"
+#include "hardware/processor/RP2040/RP2040_SPI.h"
+#include "hardware/processor/RP2040/RP2040_GPIO.h"
 
-#include "hardware/display/eink/gd7965/GD7965.h"
-#include "hardware/RTC/ds3231/DS3231.h"
+#include "hardware/display/eink/GD7965/GD7965.h"
+#include "hardware/RTC/DS3231/DS3231.h"
 
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
