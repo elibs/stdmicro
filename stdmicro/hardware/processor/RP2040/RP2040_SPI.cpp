@@ -2,13 +2,16 @@
 
 #include "pico/stdlib.h"
 
-RP2040_SPI::RP2040_SPI(spi_inst_t* spi, SPIPins pins, size_t baudRate):
+namespace stdmicro::processor::RP2040
+{
+
+RP2040_SPI::RP2040_SPI(spi_inst_t* spi, stdmicro::SPIPins pins, size_t baudRate):
     mSpi(spi),
     mBaudRate(baudRate),
-    mCs(pins.cs, GPIO::SIO, GPIO::Output),
-    mSck(pins.sck, GPIO::SPI, GPIO::Output),
-    mMiso(pins.miso, GPIO::SPI, GPIO::Input),
-    mMosi(pins.mosi, GPIO::SPI, GPIO::Output)
+    mCs(pins.cs, stdmicro::GPIO::SIO, stdmicro::GPIO::Output),
+    mSck(pins.sck, stdmicro::GPIO::SPI, stdmicro::GPIO::Output),
+    mMiso(pins.miso, stdmicro::GPIO::SPI, stdmicro::GPIO::Input),
+    mMosi(pins.mosi, stdmicro::GPIO::SPI, stdmicro::GPIO::Output)
 {
     spi_init(mSpi, baudRate);
 }
@@ -61,3 +64,5 @@ size_t RP2040_SPI::baudrate(size_t baudRate)
     mBaudRate = spi_set_baudrate(mSpi, baudRate);
     return mBaudRate;
 }
+
+} // stdmicro::processor::RP2040

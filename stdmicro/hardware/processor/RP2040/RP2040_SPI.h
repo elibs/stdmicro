@@ -7,10 +7,13 @@
 
 #include "hardware/spi.h"
 
+namespace stdmicro::processor::RP2040
+{
+
 class RP2040_SPI: public SPI
 {
 public:
-    RP2040_SPI(spi_inst_t* spi, SPIPins pins, size_t buadRate);
+    RP2040_SPI(spi_inst_t* spi, stdmicro::SPIPins pins, size_t buadRate);
     virtual ~RP2040_SPI(void);
 
     void format(size_t bitsPerTransfer, bool cpol, bool cpha, bool msbFirst) override;
@@ -30,5 +33,7 @@ private:
     RP2040_GPIO mMiso;
     RP2040_GPIO mMosi;
 };
+
+} // stdmicro::processor::RP2040
 
 #endif

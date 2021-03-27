@@ -1,6 +1,9 @@
 #include "GD7965.h"
 #include "Frequencies.h"
 
+namespace stdmicro
+{
+
 GD7965::GD7965(SPI* spi, GPIO* dataCmd, GPIO* busy, GPIO* reset):
     mSpi(spi),
     mDataCmd(dataCmd),
@@ -157,3 +160,5 @@ void GD7965::powerOff(void)
     command(DEEP_SLEEP);
     sendData(buffer, 1);
 }
+
+} // stdmicro

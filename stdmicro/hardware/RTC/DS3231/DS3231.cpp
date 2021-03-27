@@ -1,5 +1,8 @@
 #include "DS3231.h"
 
+namespace stdmicro
+{
+
 DS3231::DS3231(I2C* i2c):
     mI2c(i2c)
 {
@@ -166,3 +169,5 @@ bool DS3231::isStopped(void)
     mI2c->read(address(), mBuffer, 1);
     return mBuffer[1] & 0x80;
 }
+
+} // stdmicro

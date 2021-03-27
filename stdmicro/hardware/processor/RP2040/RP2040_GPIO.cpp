@@ -3,7 +3,10 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 
-RP2040_GPIO::RP2040_GPIO(size_t pin, GPIO::Function func, GPIO::Direction dir):
+namespace stdmicro::processor::RP2040
+{
+
+RP2040_GPIO::RP2040_GPIO(size_t pin, stdmicro::GPIO::Function func, stdmicro::GPIO::Direction dir):
     mPin(pin)
 {
     gpio_init(mPin);
@@ -15,7 +18,7 @@ RP2040_GPIO::~RP2040_GPIO(void)
 {
 }
 
-void RP2040_GPIO::function(GPIO::Function func) const
+void RP2040_GPIO::function(stdmicro::GPIO::Function func) const
 {
 
     gpio_function f;
@@ -62,19 +65,19 @@ void RP2040_GPIO::function(GPIO::Function func) const
     gpio_set_function(mPin, f);
 }
 
-void RP2040_GPIO::direction(GPIO::Direction dir) const
+void RP2040_GPIO::direction(stdmicro::GPIO::Direction dir) const
 {
-    gpio_set_dir(mPin, dir == GPIO::Input ? GPIO_IN : GPIO_OUT);
+    gpio_set_dir(mPin, dir == stdmicro::GPIO::Input ? GPIO_IN : GPIO_OUT);
 }
 
-GPIO::Direction RP2040_GPIO::direction(void) const
+stdmicro::GPIO::Direction RP2040_GPIO::direction(void) const
 {
     int dir = gpio_get_dir(mPin);
     if (dir == 1) // out
     {
-        return GPIO::Output;
+        return stdmicro::GPIO::Output;
     }
-    return GPIO::Input;
+    return stdmicro::GPIO::Input;
 
 }
 
@@ -107,3 +110,5 @@ bool RP2040_GPIO::isPulledDown(void) const
 {
     return gpio_is_pulled_down(mPin);
 }
+
+} // stdmicro::processor::RP2040

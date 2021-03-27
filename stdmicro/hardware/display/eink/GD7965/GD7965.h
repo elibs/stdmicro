@@ -6,6 +6,9 @@
 #include "hardware/SPI.h"
 #include "hardware/GPIO.h"
 
+namespace stdmicro
+{
+
 // NOTE: We will be using DMA for our SPI controller, as it allows us to have
 //       Direct Memory Access, and is a significantly faster transfer speed
 //       than we can, ourselves, do.
@@ -225,5 +228,7 @@ private:
         sendData(buffer, 2);
     }
 };
+
+} // stdmicro
 
 #endif

@@ -1,6 +1,9 @@
 #ifndef __STD_MICRO_REAL_TIME_CLOCK_H
 #define __STD_MICRO_REAL_TIME_CLOCK_H
 
+namespace stdmicro
+{
+
 /**
  * A time structure, almost identical to what you would expect when dealing
  * with a Linux system, made smaller to deal with the fact that we are on a
@@ -128,5 +131,7 @@ public:
      */
     virtual void disableInterrupt(void) = 0;
 };
+
+} // stdmicro
 
 #endif

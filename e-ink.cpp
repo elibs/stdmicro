@@ -95,10 +95,10 @@ void sleep_goto_dormant_until_pin(uint gpio_pin, bool edge, bool high) {
 
 int main()
 {
-    RP2040_GPIO led(LED_PIN, GPIO::SIO, GPIO::Output);
+    stdmicro::processor::RP2040::RP2040_GPIO led(LED_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Output);
 
-    RP2040_I2C i2c(i2c1, I2CPins{.sck = 10, .sda = 11}, 100_KHz);
-    DS3231 rtc(&i2c);
+    stdmicro::processor::RP2040::RP2040_I2C i2c(i2c1, stdmicro::I2CPins{.sck = 10, .sda = 11}, 100_KHz);
+    stdmicro::DS3231 rtc(&i2c);
 
     /**
      * Example of how to write out the date and time to a RTC device.
@@ -115,21 +115,21 @@ int main()
     //});
 
     blink(&led, 1);
-    RP2040_SPI spi(spi0, {
+    stdmicro::processor::RP2040::RP2040_SPI spi(spi0, {
         .cs = CS_PIN,
         .miso = MISO_PIN,
         .mosi = MOSI_PIN,
         .sck = SCK_PIN
     }, 20_MHz);
     blink(&led, 2, 100);
-    RP2040_GPIO displayResetPin(RESET_PIN, GPIO::SIO, GPIO::Output);
+    stdmicro::processor::RP2040::RP2040_GPIO displayResetPin(RESET_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Output);
     blink(&led, 2, 100);
-    RP2040_GPIO displayBusyPin(BUSY_PIN, GPIO::SIO, GPIO::Input);
+    stdmicro::processor::RP2040::RP2040_GPIO displayBusyPin(BUSY_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Input);
     blink(&led, 2, 100);
-    RP2040_GPIO displayDataCmdPin(DC_PIN, GPIO::SIO, GPIO::Output);
+    stdmicro::processor::RP2040::RP2040_GPIO displayDataCmdPin(DC_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Output);
     blink(&led, 2, 100);
 
-    GD7965 eink(&spi, &displayDataCmdPin, &displayBusyPin, &displayResetPin);
+    stdmicro::GD7965 eink(&spi, &displayDataCmdPin, &displayBusyPin, &displayResetPin);
     blink(&led, 2);
 
     Canvas c(800, 480);
@@ -156,14 +156,14 @@ int main()
     eink.draw(c.get(), c.size());
     eink.powerOff();
 
-    tm t;
+    stdmicro::tm t;
     rtc.read(t);
     sprintf(timestampbuf, "Date: %d-%d-%d@%d:%d:%d %s\n ", t.year, t.month, t.dayOfMonth, t.hour > 12 ? t.hour - 12 : t.hour, t.minute, t.second, t.hour > 12 ? "PM" : "AM");
 
     f.write(timestampbuf);
 
-    unsigned char status = rtc.read(DS3231::Status);
-    unsigned char control = rtc.read(DS3231::Control);
+    unsigned char status = rtc.read(stdmicro::DS3231::Status);
+    unsigned char control = rtc.read(stdmicro::DS3231::Control);
     sprintf(timestampbuf, "Control Register: %x\nStatus Register: %x\n", control, status);
     f.write(timestampbuf);
 
@@ -182,7 +182,7 @@ int main()
     //    blink(&led, 4, 10000);
     //}
 
-    //RP2040_GPIO alarm(15, GPIO::SIO, GPIO::Input);
+    //RP2040_GPIO alarm(15, stdmicro::GPIO::SIO, stdmicro::GPIO::Input);
     //alarm.pullUp();
     int draw = 0;
     while (true)

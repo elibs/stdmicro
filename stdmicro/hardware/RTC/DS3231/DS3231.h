@@ -4,6 +4,9 @@
 #include "hardware/RTC/RTC.h"
 #include "hardware/I2C.h"
 
+namespace stdmicro
+{
+
 class DS3231: public RTC
 {
 public:
@@ -48,5 +51,7 @@ private:
     I2C* mI2c;
     char mBuffer[8];
 };
+
+} // stdmicro
 
 #endif

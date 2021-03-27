@@ -1,6 +1,9 @@
 #ifndef __DISPLAY_H
 #define __DISPLAY_H
 
+namespace stdmicro
+{
+
 class Display
 {
 public:
@@ -64,5 +67,7 @@ public:
      */
     virtual void init(void) = 0;
 };
+
+} // stdmicro
 
 #endif

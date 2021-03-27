@@ -1,6 +1,9 @@
 #ifndef __STD_MICRO_GPIO_H
 #define __STD_MICRO_GPIO_H
 
+namespace stdmicro
+{
+
 class GPIO
 {
 public:
@@ -94,5 +97,7 @@ public:
      */
     virtual bool isPulledDown(void) const = 0;
 };
+
+} // stdmicro
 
 #endif

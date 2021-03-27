@@ -2,7 +2,10 @@
 
 #include "hardware/gpio.h"
 
-RP2040_I2C::RP2040_I2C(i2c_inst_t* i2c, I2CPins pins, uint baudrate):
+namespace stdmicro::processor::RP2040
+{
+
+RP2040_I2C::RP2040_I2C(i2c_inst_t* i2c, stdmicro::I2CPins pins, uint baudrate):
     mI2c(i2c),
     mBaudRate(i2c_init(mI2c, baudrate))
 {
@@ -35,3 +38,5 @@ size_t RP2040_I2C::baudrate(size_t baudRate)
     mBaudRate = i2c_set_baudrate(mI2c, baudRate);
     return mBaudRate;
 }
+
+} // stdmicro::rpocessor::RP2040

@@ -5,18 +5,21 @@
 
 #include "GPIO.h"
 
-class RP2040_GPIO: public GPIO
+namespace stdmicro::processor::RP2040
+{
+
+class RP2040_GPIO: public stdmicro::GPIO
 {
 public:
-    RP2040_GPIO(size_t gpioPin, GPIO::Function func, GPIO::Direction dir);
+    RP2040_GPIO(size_t gpioPin, stdmicro::GPIO::Function func, stdmicro::GPIO::Direction dir);
     virtual ~RP2040_GPIO(void);
 
     virtual void put(bool up) const override;
     virtual void pullUp(void) const override;
     virtual void pullDown(void) const override;
 
-    virtual void function(GPIO::Function func) const override;
-    virtual void direction(GPIO::Direction dir) const override;
+    virtual void function(stdmicro::GPIO::Function func) const override;
+    virtual void direction(stdmicro::GPIO::Direction dir) const override;
     virtual GPIO::Direction direction(void) const override;
 
     virtual operator bool(void) const override;
@@ -26,5 +29,7 @@ private:
     size_t mPin;
 
 };
+
+} // stdmicro::processor::RP2040
 
 #endif
