@@ -95,9 +95,9 @@ void sleep_goto_dormant_until_pin(uint gpio_pin, bool edge, bool high) {
 
 int main()
 {
-    stdmicro::processor::RP2040::RP2040_GPIO led(LED_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Output);
+    stdmicro::mcu::RP2040_GPIO led(LED_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Output);
 
-    stdmicro::processor::RP2040::RP2040_I2C i2c(i2c1, stdmicro::I2CPins{.sck = 10, .sda = 11}, 100_KHz);
+    stdmicro::mcu::RP2040_I2C i2c(i2c1, stdmicro::I2CPins{.sck = 10, .sda = 11}, 100_KHz);
     stdmicro::DS3231 rtc(&i2c);
 
     /**
@@ -115,18 +115,18 @@ int main()
     //});
 
     blink(&led, 1);
-    stdmicro::processor::RP2040::RP2040_SPI spi(spi0, {
+    stdmicro::mcu::RP2040_SPI spi(spi0, {
         .cs = CS_PIN,
         .miso = MISO_PIN,
         .mosi = MOSI_PIN,
         .sck = SCK_PIN
     }, 20_MHz);
     blink(&led, 2, 100);
-    stdmicro::processor::RP2040::RP2040_GPIO displayResetPin(RESET_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Output);
+    stdmicro::mcu::RP2040_GPIO displayResetPin(RESET_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Output);
     blink(&led, 2, 100);
-    stdmicro::processor::RP2040::RP2040_GPIO displayBusyPin(BUSY_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Input);
+    stdmicro::mcu::RP2040_GPIO displayBusyPin(BUSY_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Input);
     blink(&led, 2, 100);
-    stdmicro::processor::RP2040::RP2040_GPIO displayDataCmdPin(DC_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Output);
+    stdmicro::mcu::RP2040_GPIO displayDataCmdPin(DC_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Output);
     blink(&led, 2, 100);
 
     stdmicro::GD7965 eink(&spi, &displayDataCmdPin, &displayBusyPin, &displayResetPin);
