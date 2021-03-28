@@ -70,7 +70,7 @@ RTC::AlarmError DS3231::setAlarm(unsigned int index, const tm& alarmTime, unsign
     mI2c->write(address(), mBuffer, 1);
     unsigned char control;
     mI2c->read(address(), &control, 1);
-    if ((control & 0x04) == 0)
+    if ((control & InterruptControl) == 0)
     {
         // the Interrupt bit hasn't been enabled, so alarms won't work as expected.
         return RTC::E_MUST_ENABLE_INTERRUPT;
@@ -100,7 +100,10 @@ RTC::AlarmError DS3231::setAlarm(unsigned int index, const tm& alarmTime, unsign
 
     mI2c->write(address(), mBuffer + index, 5 - index);
 
-    control |= (0x01 << index);
+    // Alarm1 is 0x01, alarm2 is 0x02, so we can shift alarm 1 by the offset
+    // specified by the index given (where index 0 is alarm 1, and index 1 is
+    // alarm 2).
+    control |= (Alarm1Enable << index);
     mBuffer[0] = Control;
     mBuffer[1] = control;
     mI2c->write(address(), mBuffer, 2);
@@ -119,7 +122,10 @@ void DS3231::disableAlarm(unsigned int index)
     mI2c->write(address(), mBuffer, 1);
     mI2c->read(address(), mBuffer + 1, 1);
 
-    mBuffer[1] &= ~(0x01 << index);
+    // Alarm1 is 0x01, alarm2 is 0x02, so we can shift alarm 1 by the offset
+    // specified by the index given (where index 0 is alarm 1, and index 1 is
+    // alarm 2).
+    mBuffer[1] &= ~(Alarm1Enable << index);
     mI2c->write(address(), mBuffer, 2);
 }
 
@@ -129,7 +135,10 @@ void DS3231::clearAlarm(unsigned int index)
     mI2c->write(address(), mBuffer, 1);
     mI2c->read(address(), mBuffer + 1, 1);
 
-    mBuffer[1] &= ~(0x01 << index);
+    // Alarm1 is 0x01, alarm2 is 0x02, so we can shift alarm 1 by the offset
+    // specified by the index given (where index 0 is alarm 1, and index 1 is
+    // alarm 2).
+    mBuffer[1] &= ~(Alarm1Flag << index);
     mI2c->write(address(), mBuffer, 2);
 }
 
@@ -139,16 +148,14 @@ void DS3231::enableInterrupt(void)
     mI2c->write(address(), mBuffer, 1);
     mI2c->read(address(), mBuffer + 1, 1);
 
-    // a = 10, b = 11, c = 12 = 1100
-    // 0x1c = 00011100
-    mBuffer[1] |= 0x04;
+    mBuffer[1] |= InterruptControl;
     mI2c->write(address(), mBuffer, 2);
 
     // Disable 32kHz square wave.
     mBuffer[0] = Status;
     mI2c->write(address(), mBuffer, 1);
     mI2c->read(address(), mBuffer + 1, 1);
-    mBuffer[1] &= ~(0x01 << 3);
+    mBuffer[1] &= ~Enable32KHzOutput;
     mI2c->write(address(), mBuffer, 2);
 }
 
@@ -158,7 +165,7 @@ void DS3231::disableInterrupt(void)
     mI2c->write(address(), mBuffer, 1);
     mI2c->read(address(), mBuffer + 1, 1);
 
-    mBuffer[1] &= ~0x04;
+    mBuffer[1] &= ~InterruptControl;
     mI2c->write(address(), mBuffer, 2);
 }
 
@@ -167,7 +174,7 @@ bool DS3231::isStopped(void)
     mBuffer[0] = Status;
     mI2c->write(address(), mBuffer, 1);
     mI2c->read(address(), mBuffer, 1);
-    return mBuffer[1] & 0x80;
+    return mBuffer[1] & OscillatorStopFlag;
 }
 
 } // stdmicro
