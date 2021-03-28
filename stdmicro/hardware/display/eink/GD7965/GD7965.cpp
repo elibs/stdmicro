@@ -124,20 +124,20 @@ void GD7965::init(void)
 void GD7965::clear(void)
 {
     buffer[0] = 0x00;
-    command(0x10);
+    command(DISPLAY_START_TX_OLD);
     for (size_t i = 0; i < (width() / 8) * height(); ++i)
     {
         sendData(buffer, 1);
     }
 
     buffer[0] = 0xff;
-    command(0x13);
+    command(DISPLAY_START_TX_NEW);
     for (size_t i = 0; i < (width() / 8) * height(); ++i)
     {
         sendData(buffer, 1);
     }
 
-    command(0x12);
+    command(DISPLAY_REFRESH);
     sleep_ms(100);
     waitUntilIdle();
 }

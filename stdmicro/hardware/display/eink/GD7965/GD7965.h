@@ -142,7 +142,27 @@ private:
 
     inline void panelSetting()
     {
-        buffer[0] = 0x1f; // 00 - reserved, 0 - load LUT from OPT, 1 - black and white mode, 0 - scan down (instead of up), 1 - shift right (instead of left), 1 - booster on (default), 1 - don't soft reset.
+        /**
+         * Bit fields:
+         * 7-6: Reserved
+         * 5: LUT Selection. 0 to load LUT from OTP (the default), or 1 to read
+         *    the LUT from registers
+         * 4: Black/ White/ Red. 0 means that the pixels are in Black/ White/
+         *    Red mode (default), or 1 to be in Black and White mode. The
+         *    GD7965 is a black-and-white display, so we want 0 here.
+         * 3: Gate Scan Direction: 0 to scan down, 1 to scan up (default).
+         * 2: Source Shift Direction. 0 to shift left, 1 to shift right (default)
+         * 1: Booster Switch. 0 off, 1 on (default). When the booster is off the
+         *    charge pump is diabled, which means that register and RAM values
+         *    will be lost when voltage is turned off (for instance, on a power
+         *    down). This also releases Source, Gate, Border, and VCOM to
+         *    floating.
+         * 0: Soft Reset. 0 Reset (booster off, register data is set to default,
+         *    all drivers are reset and all functions are disabled. Source,
+         *    Gate, Border, and VCOM are also released to floating. 1 means no
+         *    effect (default).
+         */
+        buffer[0] = 0b00011111;
         command(PANEL_SETTING);
         sendData(buffer, 1);
     }
