@@ -169,10 +169,44 @@ private:
 
     inline void powerSetting(void)
     {
+        /**
+         * 7-5: reserved
+         * 4: Border LDO enable. 0 to disable (default), 1 to enable
+         * 3: reserved
+         * 2: Source LV power selection. 0 external power, 1 internal DC/DC to
+         *    generate voltage (default).
+         * 1: Source power selection. 0 external power, 1 internal power
+         *    (default).
+         * 0: Gate power selection. 0 external, 1 internal (default)
+         */
         buffer[0] = 0x07;
+        /**
+         * 7: OTP program power selection. 0 external, 1 internal (default).
+         *    The voltage is determined by the internal VDHR power selection.
+         * 6-5: reserved
+         * 4: VCOM slew rate selection. 0 slow, 1 fast.
+         * 3: reserved
+         * 2-0: VGH/VGL voltage level selection. 111b is the default. See
+         *    datasheet for specific voltages at each option.
+         */
         buffer[1] = 0x17;
+        /**
+         * 7-6: reserved
+         * 5-0: Internal VDH power selection (default 111010b). See datasheet
+         *    for specific voltages at each option.
+         */
         buffer[2] = 0x3f;
+        /**
+         * 7-6: reserved
+         * 5-0: Internal VDL power selection (default 111010b). See datasheet
+         *    for specific voltages at each option.
+         */
         buffer[3] = 0x3f;
+        /**
+         * 7-6: reserved
+         * 5-0: Internal VDHR power selection (default 111010b). See datasheet
+         *    for specific voltages at each option.
+         */
         buffer[4] = 0x03;
         command(POWER_SETTING);
         sendData(buffer, 5);
@@ -180,9 +214,36 @@ private:
 
     inline void boosterSoftStart(void)
     {
+        /**
+         * 7-6: Soft start period for phase A. 00b = 10mx, 01b: 20ms,
+         *    10b: 30ms, 11b: 40ms
+         * 5-3: Phase A driving strength. Strength = 1 + value (1-8). 8 is
+         *    strongest
+         * 2-0: Minimum off time setting for phase A. 000b: .27us, 001b: .34us,
+         *    010b: .4us, 011b: .54us, 100b: .8us, 101b: 1.54us, 110b: 3.34us,
+         *    111b: 6.58us
+         * NOTE: The strengths, periods, and off times are the same for each of
+         *       the other phases in this command.
+         */
         buffer[0] = 0x17;
+        /**
+         * 7-6: Soft start period for phase B.
+         * 5-3: Phase B driving strength
+         * 2-0: Minimum off time for phase B.
+         */
         buffer[1] = 0x17;
+        /**
+         * 7-6: reserved
+         * 5-3: Phase C1 driving strength
+         * 2-0: Minimum off time for phase C1.
+         */
         buffer[2] = 0x27;
+        /**
+         * 7: Phase C2 enabled. 0 to disable, 1 to enable.
+         * 6: reserved
+         * 5-3: Phase C1 driving strength
+         * 2-0: Minimum off time for phase C1.
+         */
         buffer[3] = 0x17;
         command(BOOSTER_SOFT_START);
         sendData(buffer, 4);
@@ -190,6 +251,13 @@ private:
 
     inline void pllControl(void)
     {
+        /**
+         * 7-4: reserved
+         * 3-0: PLL clock frequency. 0000b 5Hz, 0001b: 10Hz, 0010b: 15Hz,
+         *    0011b: 20Hz, 0100b: 30Hz, 0101b: 40Hz, 0110b: 50Hz, 0111b: 60Hz,
+         *    1000b: 70Hz, 1001b: 80Hz, 1010b: 90Hz, 1011b: 100Hz,
+         *    1100b: 110Hz, 1101b: 130Hz, 1110b: 150Hz, 1111b: 200Hz
+         */
         buffer[0] = 0x06;
         command(PLL_CONTROL);
         sendData(buffer, 1);
@@ -197,8 +265,29 @@ private:
 
     inline void lut(void)
     {
+        /**
+         * 7-2: reserved
+         * 1: Black/White LUT
+         * 0: Black/White/Red LUT
+         *
+         * 1-0: 00b Black/White/Red LUT alwasy, 01b Black/White LUT only,
+         *    10b Auto detect by red data, 11b Black/White LUT only.
+         */
         buffer[0] = 0x02;
+        /**
+         * 7-6: Black/White LUT control bits (bits 9 and 8)
+         * 5-0: reserved
+         */
         buffer[1] = 0x80;
+        /**
+         * 7-0: Black/White LUT control bits (bits 7 through 0).
+         *    000000001b: Black/White LUT state 1,
+         *    0000000011b state 1 and state 2, 0000001011b: state 1, 2, and 4.
+         *
+         * NOTE: The datasheet doesn't have a definition of _what_ these states
+         *       actually mean. We use the suggested value from the datasheet's
+         *       example flow diagram.
+         */
         buffer[2] = 0x00;
         command(KW_LUT);
         sendData(buffer, 3);
@@ -208,11 +297,36 @@ private:
     {
         unsigned short w = (width() / 8) << 3;
         // horizontal resolution, 800
+        /**
+         * 7-2: reserved
+         * 1-0: Bits 9-8 of value
+         */
         buffer[0] = (w >> 8) & 0xff;
+        /**
+         * 7-3: Bits 7-3 of value.
+         * 2-0: Must be 0. Bits 2-0 of value
+         *
+         * This selects the horizontal resolution. It is worth noting that this
+         * is defined to be in multiples of 8 (so 1 byte writes out 8 pixels,
+         * and you can't easily write out a range that isn't a multiple of 8).
+         *
+         * The value winds up being value * 8 - 1
+         *
+         * Valid range is 0x01 - 0x64.
+         */
         buffer[1] = w & 0xff;
 
         // vertical resolution, 480
+        /**
+         * 7-2: reserved
+         * 1-0: Bits 9-8 of value
+         */
         buffer[2] = 0x01;
+        /**
+         * 7-0: Bits 7-0 of value.
+         *
+         * The vertical resolution, valid range is 0x001 - 0x258.
+         */
         buffer[3] = 0xe0;
         command(RESOLUTION_SETTING);
         sendData(buffer, 4);
@@ -220,7 +334,12 @@ private:
 
     inline void dualSpi(void)
     {
-        // Disable MM input definition, and MISO SPI pin
+        /**
+         * 7-6: reserved
+         * 5: MM input definition enabled. 0 disable, 1 enable.
+         * 4: Dual SPI mode enable. 0 disable (single SPI mode), 1 enable.
+         * 3-0: reserved
+         */
         buffer[0] = 0x00;
         command(DUAL_SPI);
         sendData(buffer, 1);
@@ -228,6 +347,12 @@ private:
 
     inline void tconSetting(void)
     {
+        /**
+         * 7-4: Source to Gate non-overlap period values start at
+         *    0000b: 4 (period), with 0010b (default) being 12, and increase by
+         *    4 for each bit, up to 1111b: 64. 1 period = 667ns.
+         * 3-0: Gate to Source non-overlap period. The same as above.
+         */
         buffer[0] = 0x22;
         command(TCON_SETTING);
         sendData(buffer, 1);
@@ -235,6 +360,11 @@ private:
 
     inline void vcomDcSetting(void)
     {
+        /**
+         * 7: reserved
+         * 6-0: VCOM DC setting. This is determined by a table, see the
+         *    datasheet for specifics.
+         */
         buffer[0] = 0x26;
         command(VCOM_DC_SETTING);
         sendData(buffer, 1);
@@ -242,7 +372,24 @@ private:
 
     inline void vcomDataIntervalSetting(void)
     {
+        /**
+         * 7: Border Hi-Z control., 0 disable (default), 1 enable
+         * 6: reserved
+         * 5-4: Border LUT selection. This value depends on DDX as well, so
+         *    look at the datasheet for specifics.
+         * 3: Copy New data to Old data post-refresh enable.
+         *    0 disable (default), 1 enable.
+         * 2: reserved
+         * 1-0: Data polality. Bit 1 is for Red data, bit 0 for Black/White
+         *    data. The value of this field changes LUTs, see the datasheet for
+         *    specifics.
+         */
         buffer[0] = 0x89;
+        /**
+         * 7-4: reserved
+         * 3-0: VCOM and data interval. 0111b: 10 (defualt). Lower values
+         *    increase the number by 1, and higher values decrease it by 1.
+         */
         buffer[1] = 0x07;
         command(VCOM_DATA_INTERVAL_SETTING);
         sendData(buffer, 2);
