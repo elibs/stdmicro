@@ -97,7 +97,7 @@ int main()
 {
     stdmicro::mcu::RP2040_GPIO led(LED_PIN, stdmicro::GPIO::SIO, stdmicro::GPIO::Output);
 
-    stdmicro::mcu::RP2040_I2C i2c(i2c1, stdmicro::I2CPins{.sck = 10, .sda = 11}, 100_KHz);
+    stdmicro::mcu::RP2040_I2C i2c(i2c1, stdmicro::I2CPins{.sck = 11, .sda = 10}, 100_KHz);
     stdmicro::DS3231 rtc(&i2c);
 
     /**
@@ -167,23 +167,12 @@ int main()
     sprintf(timestampbuf, "Control Register: %x\nStatus Register: %x\n", control, status);
     f.write(timestampbuf);
 
-    //Canvas c2(800, 120);
-    //f.setCanvas(&c2);
-
     rtc.enableInterrupt();
     rtc.disableAlarm(0);
     rtc.disableAlarm(1);
     rtc.clearAlarm(0);
     rtc.clearAlarm(1);
 
-    //RTC::AlarmError err = rtc.setAlarm(1, t, RTC::EACH_MINUTE | RTC::EACH_HOUR | RTC::EACH_DAY);
-    //if (err != RTC::E_ALL_GOOD)
-    //{
-    //    blink(&led, 4, 10000);
-    //}
-
-    //RP2040_GPIO alarm(15, stdmicro::GPIO::SIO, stdmicro::GPIO::Input);
-    //alarm.pullUp();
     int draw = 0;
     while (true)
     {
@@ -203,19 +192,18 @@ int main()
         f.write(timestampbuf);
         eink.restart();
         eink.draw(c.get(), c.size());
-        //eink.drawPartial(c2.get(), c2.size(), 0, 100, c2.width(), c2.height());
         eink.powerOff();
 
-        //sleep_goto_dormant_until_pin(15, true, false);
-        //
-        //rtc.clearAlarm(1);
-        //alarm.pullUp();
-        //c2.clear();
         c.clear();
         f.reset();
         sleep_ms(10000);
 
-        if (batteryVoltage <= 2.0)
+        // The LiPo batteries that I am using (LP552035) have internal safety
+        // circuitry, and cut out at 3.0v, so we want to have a chance at
+        // stopping a bit before we lose power, if we read a total of <=3.1v
+        // (there will be some slop), we complete the main loop and go to our
+        // sleep loop.
+        if (batteryVoltage * batteryVoltageMultiplier <= 3.1)
         {
             break;
         }
