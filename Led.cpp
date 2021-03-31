@@ -3,7 +3,7 @@
 
 #include "pico/stdlib.h" // for sleep_ms
 
-void blink(GPIO* led, int count, unsigned int delay)
+void blink(stdmicro::GPIO* led, int count, unsigned int delay)
 {
     while (count--)
     {

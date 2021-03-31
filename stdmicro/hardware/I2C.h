@@ -3,6 +3,9 @@
 
 #include "types.h"
 
+namespace stdmicro
+{
+
 struct I2CPins
 {
     unsigned int sck;
@@ -46,5 +49,7 @@ public:
      */
     virtual size_t baudrate(size_t baudRate) = 0;
 };
+
+} // stdmicro
 
 #endif

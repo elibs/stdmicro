@@ -1,6 +1,9 @@
 #include "GD7965.h"
 #include "Frequencies.h"
 
+namespace stdmicro
+{
+
 GD7965::GD7965(SPI* spi, GPIO* dataCmd, GPIO* busy, GPIO* reset):
     mSpi(spi),
     mDataCmd(dataCmd),
@@ -121,20 +124,20 @@ void GD7965::init(void)
 void GD7965::clear(void)
 {
     buffer[0] = 0x00;
-    command(0x10);
+    command(DISPLAY_START_TX_OLD);
     for (size_t i = 0; i < (width() / 8) * height(); ++i)
     {
         sendData(buffer, 1);
     }
 
     buffer[0] = 0xff;
-    command(0x13);
+    command(DISPLAY_START_TX_NEW);
     for (size_t i = 0; i < (width() / 8) * height(); ++i)
     {
         sendData(buffer, 1);
     }
 
-    command(0x12);
+    command(DISPLAY_REFRESH);
     sleep_ms(100);
     waitUntilIdle();
 }
@@ -157,3 +160,5 @@ void GD7965::powerOff(void)
     command(DEEP_SLEEP);
     sendData(buffer, 1);
 }
+
+} // stdmicro

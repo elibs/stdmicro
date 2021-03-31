@@ -26,11 +26,11 @@ add_executable(eink
     FontSize.cpp
     Led.cpp
     Path.cpp
-    stdmicro/hardware/RTC/ds3231/DS3231.cpp
-    stdmicro/hardware/display/eink/gd7965/GD7965.cpp
-    stdmicro/hardware/processor/rp2040/RP2040_GPIO.cpp
-    stdmicro/hardware/processor/rp2040/RP2040_I2C.cpp
-    stdmicro/hardware/processor/rp2040/RP2040_SPI.cpp
+    stdmicro/hardware/RTC/DS3231/DS3231.cpp
+    stdmicro/hardware/display/eink/GD7965/GD7965.cpp
+    stdmicro/hardware/processor/RP2040/RP2040_GPIO.cpp
+    stdmicro/hardware/processor/RP2040/RP2040_I2C.cpp
+    stdmicro/hardware/processor/RP2040/RP2040_SPI.cpp
     e-ink.cpp
 )
 
@@ -48,6 +48,7 @@ target_link_libraries(eink
     hardware_gpio
     hardware_i2c
     hardware_xosc
+    hardware_adc
 )
 
 pico_add_extra_outputs(eink)

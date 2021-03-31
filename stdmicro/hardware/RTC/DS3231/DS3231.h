@@ -4,6 +4,9 @@
 #include "hardware/RTC/RTC.h"
 #include "hardware/I2C.h"
 
+namespace stdmicro
+{
+
 class DS3231: public RTC
 {
 public:
@@ -16,6 +19,28 @@ public:
         Status = 0x0F,
         AgingOffset = 0x10,
         Temperature = 0x11
+    };
+
+    enum ControlFields
+    {
+        EnableOscillator = (0x01 << 7),
+        BatteryBackedSquareWaveEnable = (0x01 << 6),
+        ConvertTemperature = (0x01 << 5),
+        RateSelect2 = (0x01 << 4),
+        RateSelect1 = (0x01 << 3),
+        InterruptControl = (0x01 << 2),
+        Alarm2Enable = (0x01 << 1),
+        Alarm1Enable = (0x01 << 0)
+    };
+
+    enum StatusFields
+    {
+        OscillatorStopFlag = (0x01 << 7),
+        // Bits 6-4 are reserved
+        Enable32KHzOutput = (0x01 << 3),
+        Busy = (0x01 << 2),
+        Alarm2Flag = (0x01 << 1),
+        Alarm1Flag = (0x01 << 0)
     };
 
     DS3231(I2C* i2c);
@@ -48,5 +73,7 @@ private:
     I2C* mI2c;
     char mBuffer[8];
 };
+
+} // stdmicro
 
 #endif

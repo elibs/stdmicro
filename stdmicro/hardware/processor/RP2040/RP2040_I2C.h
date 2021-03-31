@@ -5,10 +5,13 @@
 
 #include "hardware/i2c.h"
 
-class RP2040_I2C: public I2C
+namespace stdmicro::processor::RP2040
+{
+
+class RP2040_I2C: public stdmicro::I2C
 {
 public:
-    RP2040_I2C(i2c_inst_t* i2c, I2CPins pins, uint baudrate);
+    RP2040_I2C(i2c_inst_t* i2c, stdmicro::I2CPins pins, uint baudrate);
     virtual ~RP2040_I2C(void);
 
     ssize_t read(unsigned char address, void* destination, unsigned int bytes);
@@ -20,5 +23,7 @@ private:
     i2c_inst_t* mI2c;
     size_t mBaudRate;
 };
+
+} // stdmicro::processor::RP2040
 
 #endif

@@ -3,6 +3,9 @@
 
 #include "types.h"
 
+namespace stdmicro
+{
+
 struct SPIPins
 {
 public:
@@ -68,5 +71,7 @@ public:
      */
     virtual size_t baudrate(size_t baudRate) = 0;
 };
+
+} // stdmicro
 
 #endif

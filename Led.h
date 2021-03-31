@@ -3,6 +3,6 @@
 
 #include "GPIO.h"
 
-void blink(GPIO* led, int count, unsigned int delay = 250);
+void blink(stdmicro::GPIO* led, int count, unsigned int delay = 250);
 
 #endif
